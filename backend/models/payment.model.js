@@ -68,7 +68,6 @@ const paymentSchema = new mongoose.Schema(
 
 // Index for faster queries
 paymentSchema.index({ user: 1, status: 1 });
-paymentSchema.index({ transactionId: 1 });
 paymentSchema.index({ flutterwaveTransactionId: 1 });
 
 // Virtual for formatted amount
