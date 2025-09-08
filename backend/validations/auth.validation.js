@@ -20,7 +20,26 @@ const loginValidation = () => {
   ];
 };
 
+const verifyEmailValidation = () => {
+  return [
+    body("email").notEmpty().isEmail().withMessage("Valid email is required"),
+    body("code")
+      .notEmpty()
+      .isLength({ min: 6, max: 6 })
+      .matches(/^\d{6}$/)
+      .withMessage("A 6-digit numeric code is required"),
+  ];
+};
+
+const resendCodeValidation = () => {
+  return [
+    body("email").notEmpty().isEmail().withMessage("Valid email is required"),
+  ];
+};
+
 module.exports = {
   registerValidation,
   loginValidation,
+  verifyEmailValidation,
+  resendCodeValidation,
 };

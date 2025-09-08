@@ -28,6 +28,6 @@ app.get("/health", (req, res) => {
   success({ res, message: "Intellecta is Running..." });
 });
 
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 
 module.exports = app;
