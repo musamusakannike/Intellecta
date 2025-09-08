@@ -13,6 +13,10 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  pendingVerification?: {
+    email: string;
+    name: string;
+  } | null;
 }
 
 // Course types
@@ -126,6 +130,29 @@ export interface AppSettings {
     courseUpdates: boolean;
     reminders: boolean;
     promotions: boolean;
+  };
+}
+
+// Auth verification types
+export interface RegistrationResponse {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role?: string;
+    isPremium?: boolean;
+    premiumExpiryDate?: string;
+  };
+  devVerificationCode?: string; // For development
+}
+
+export interface VerificationResponse {
+  token: string;
+  refreshToken: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
   };
 }
 

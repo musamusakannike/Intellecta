@@ -45,12 +45,13 @@ const register = async (req, res) => {
     await sendVerificationEmail({ to: email, name, code });
 
     const data = {
-      id: newUser._id,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-      isPremium: newUser.isPremium,
-      premiumExpiryDate: newUser.premiumExpiryDate,
+      user: {id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        isPremium: newUser.isPremium,
+        premiumExpiryDate: newUser.premiumExpiryDate,
+      }
     };
     if (
       !process.env.SMTP_HOST ||

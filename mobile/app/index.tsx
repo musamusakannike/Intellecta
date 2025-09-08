@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 const ONBOARDING_KEY = 'hasSeenOnboarding';
 
 export default function Index() {
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, pendingVerification } = useAuth();
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
   const [initializing, setInitializing] = useState(true);
 
@@ -19,7 +19,7 @@ export default function Index() {
     if (!initializing && hasSeenOnboarding !== null) {
       handleNavigation();
     }
-  }, [initializing, hasSeenOnboarding, isAuthenticated, isLoading]);
+  }, [initializing, hasSeenOnboarding, isAuthenticated, isLoading, pendingVerification]);
 
   const checkOnboardingStatus = async () => {
     try {
@@ -39,6 +39,15 @@ export default function Index() {
     if (!hasSeenOnboarding) {
       // First time user - show onboarding
       router.replace('/onboarding');
+    } else if (pendingVerification) {
+      // User needs to verify email
+      router.replace({
+        pathname: '/auth/email-verification',
+        params: {
+          email: pendingVerification.email,
+          name: pendingVerification.name,
+        },
+      });
     } else if (isAuthenticated && user) {
       // Authenticated user - go to main app
       router.replace('/(tabs)');

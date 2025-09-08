@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
   StatusBar,
   Alert,
   KeyboardAvoidingView,
@@ -26,8 +25,6 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
 import { isValidEmail, validatePassword } from '../../src/utils';
-
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 // Reuse the GlassmorphismInput from login (same component)
 const GlassmorphismInput = ({
@@ -62,7 +59,7 @@ const GlassmorphismInput = ({
       easing: Easing.out(Easing.cubic),
     }));
     opacity.value = withDelay(delay, withTiming(1, { duration: 400 }));
-  }, [delay]);
+  }, [delay, opacity, scale]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -136,7 +133,7 @@ const FloatingOrb = ({ size, color, top, left, delay }: {
       animateFloat();
       setInterval(animateFloat, 9000);
     }, delay);
-  }, [delay]);
+  }, [delay, opacity, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
@@ -184,7 +181,7 @@ export default function RegisterScreen() {
       duration: 600,
       easing: Easing.out(Easing.cubic),
     }));
-  }, []);
+  }, [buttonScale, formOpacity, titleOpacity]);
 
   const validateForm = () => {
     let isValid = true;
@@ -237,7 +234,14 @@ export default function RegisterScreen() {
 
     try {
       await register(name.trim(), email.trim(), password);
-      router.replace('/(tabs)');
+      // Navigate to email verification with user data
+      router.push({
+        pathname: '/auth/email-verification',
+        params: {
+          email: email.trim(),
+          name: name.trim(),
+        },
+      });
     } catch (error: any) {
       Alert.alert(
         'Registration Failed', 
