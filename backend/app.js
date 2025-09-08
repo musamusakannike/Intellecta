@@ -12,6 +12,7 @@ const courseRoutes = require("./routes/course.route");
 const topicRoutes = require("./routes/topic.route");
 const lessonRoutes = require("./routes/lesson.route");
 const paymentRoutes = require("./routes/payment.route");
+const dashboardRoutes = require("./routes/dashboard.route");
 
 const app = express();
 connectDB();
@@ -39,5 +40,6 @@ app.use("/api/courses", courseRoutes);
 app.use("/api/topics", topicRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 module.exports = app;
