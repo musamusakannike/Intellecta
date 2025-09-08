@@ -229,6 +229,97 @@ const deleteAccount = async (req, res) => {
   }
 };
 
+// Check if user has premium access
+const checkPremiumAccess = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).select('isPremium premiumExpiryDate');
+    
+    if (!user) {
+      return error({ res, message: "User not found", statusCode: 404 });
+    }
+
+    const now = new Date();
+    const isExpired = user.premiumExpiryDate && user.premiumExpiryDate < now;
+    
+    // If premium is expired, update user status
+    if (isExpired && user.isPremium) {
+      user.isPremium = false;
+      await user.save();
+    }
+
+    const hasAccess = user.isPremium && !isExpired;
+    
+    return success({
+      res,
+      message: hasAccess ? "Premium access confirmed" : "Premium access required",
+      data: {
+        hasAccess,
+        isPremium: user.isPremium,
+        premiumExpiryDate: user.premiumExpiryDate,
+        isExpired,
+        daysUntilExpiry: user.premiumExpiryDate ? Math.ceil((user.premiumExpiryDate - now) / (1000 * 60 * 60 * 24)) : null
+      }
+    });
+  } catch (err) {
+    return error({ res, message: err?.message || "Failed to check premium access" });
+  }
+};
+
+// Get premium features
+const getPremiumFeatures = async (req, res) => {
+  try {
+    const premiumFeatures = {
+      features: [
+        {
+          name: "Unlimited Course Access",
+          description: "Access to all premium courses and content",
+          icon: "🎓"
+        },
+        {
+          name: "Ad-Free Experience",
+          description: "Enjoy learning without any advertisements",
+          icon: "🚫"
+        },
+        {
+          name: "Offline Downloads",
+          description: "Download courses for offline learning",
+          icon: "💾"
+        },
+        {
+          name: "Priority Support",
+          description: "Get priority customer support and assistance",
+          icon: "⚡"
+        },
+        {
+          name: "Advanced Analytics",
+          description: "Detailed progress tracking and learning insights",
+          icon: "📊"
+        },
+        {
+          name: "Early Access",
+          description: "Get early access to new courses and features",
+          icon: "🎯"
+        }
+      ],
+      pricing: {
+        amount: 3000,
+        currency: "NGN",
+        duration: "12 months",
+        savings: "Save 40% compared to monthly billing"
+      }
+    };
+
+    return success({
+      res,
+      message: "Premium features retrieved successfully",
+      data: premiumFeatures
+    });
+  } catch (err) {
+    return error({ res, message: err?.message || "Failed to retrieve premium features" });
+  }
+};
+
 // ADMIN FUNCTIONALITIES
 
 // Get all users (Admin only)
@@ -405,6 +496,8 @@ module.exports = {
   deleteProfilePicture,
   updateExpoPushToken,
   deleteAccount,
+  checkPremiumAccess,
+  getPremiumFeatures,
   
   // Admin functions
   getAllUsers,

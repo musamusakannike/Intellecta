@@ -1,4 +1,4 @@
-# Intellecta API Documentation
+# Kodr API Documentation
 
 ## Base URL
 ```

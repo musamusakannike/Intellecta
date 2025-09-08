@@ -11,6 +11,7 @@ const userRoutes = require("./routes/user.route");
 const courseRoutes = require("./routes/course.route");
 const topicRoutes = require("./routes/topic.route");
 const lessonRoutes = require("./routes/lesson.route");
+const paymentRoutes = require("./routes/payment.route");
 
 const app = express();
 connectDB();
@@ -29,7 +30,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 app.get("/health", (req, res) => {
-  success({ res, message: "Intellecta is Running..." });
+  success({ res, message: "Kodr is Running..." });
 });
 
 app.use("/api/auth", authRoutes);
@@ -37,5 +38,6 @@ app.use("/api/users", userRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/topics", topicRoutes);
 app.use("/api/lessons", lessonRoutes);
+app.use("/api/payments", paymentRoutes);
 
 module.exports = app;

@@ -7,6 +7,8 @@ const {
   deleteProfilePicture,
   updateExpoPushToken,
   deleteAccount,
+  checkPremiumAccess,
+  getPremiumFeatures,
   getAllUsers,
   getUserById,
   adminUpdateUser,
@@ -51,6 +53,10 @@ router.put("/expo-token", updateExpoPushTokenValidation(), handleValidationError
 
 // Delete user account
 router.delete("/account", deleteAccount);
+
+// Premium routes
+router.get("/premium/access", checkPremiumAccess);
+router.get("/premium/features", getPremiumFeatures);
 
 // ADMIN ROUTES
 // Get dashboard stats
