@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -18,6 +20,8 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+
+const ONBOARDING_KEY = 'hasSeenOnboarding';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -253,6 +257,15 @@ const OnboardingScreen = () => {
     },
   ];
 
+  const completeOnboarding = async () => {
+    try {
+      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      router.replace('/auth/welcome');
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+    }
+  };
+
   const nextScreen = () => {
     if (currentScreen < screens.length - 1) {
       // Animate out current content
@@ -270,8 +283,8 @@ const OnboardingScreen = () => {
         }, 50);
       }, 300);
     } else {
-      // Handle final action (navigate to main app)
-      console.log('Onboarding completed!');
+      // Handle final action (navigate to auth)
+      completeOnboarding();
     }
   };
 

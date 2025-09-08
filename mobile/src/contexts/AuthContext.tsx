@@ -1,7 +1,11 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import apiService from '../services/api';
+import { mockApiService } from '../services/mockApi';
 import { User, AuthState } from '../types';
+
+// Set to true for testing without backend, false for real API
+const USE_MOCK_API = false;
 
 // Action types
 type AuthAction =
@@ -127,18 +131,52 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       
-      const response = await apiService.post<{ user: User; token: string; refreshToken: string }>('/auth/login', {
-        email,
-        password,
-      });
+      let response: any;
+      
+      if (USE_MOCK_API) {
+        response = await mockApiService.login(email, password);
+      } else {
+        response = await apiService.post<{ user: User; token: string; refreshToken?: string }>('/auth/login', {
+          email,
+          password,
+        });
+      }
 
-      const { user, token, refreshToken } = response.data;
+      console.log('Login response:', response); // Debug log
+      
+      // Handle different response structures
+      let user: User;
+      let token: string;
+      let refreshToken: string | undefined;
+      
+      if (response.data) {
+        console.log("Login response data:", JSON.stringify(response.data, null, 2))
+        // If data is nested in response.data
+        user = response.data.user;
+        token = response.data.token;
+        refreshToken = response.data.refreshToken;
+      } else {
+        console.log("Response: ", JSON.stringify(response, null, 2))
+        // If data is at root level
+        user = (response as any).user;
+        token = (response as any).token;
+        refreshToken = (response as any).refreshToken;
+      }
+      
+      // Validate required fields
+      if (!user || !token) {
+        throw new Error('Invalid response from server: missing user or token');
+      }
+      
+      if (!user.id || !user.name || !user.email) {
+        throw new Error('Invalid user data received from server');
+      }
 
       // Store auth data
       await Promise.all([
         AsyncStorage.setItem(USER_KEY, JSON.stringify(user)),
         apiService.setAuthToken(token),
-        apiService.setRefreshToken(refreshToken),
+        refreshToken ? apiService.setRefreshToken(refreshToken) : Promise.resolve(),
       ]);
 
       dispatch({
@@ -156,19 +194,51 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
       
-      const response = await apiService.post<{ user: User; token: string; refreshToken: string }>('/auth/register', {
-        name,
-        email,
-        password,
-      });
+      let response: any;
+      
+      if (USE_MOCK_API) {
+        response = await mockApiService.register(name, email, password);
+      } else {
+        response = await apiService.post<{ user: User; token: string; refreshToken?: string }>('/auth/register', {
+          name,
+          email,
+          password,
+        });
+      }
 
-      const { user, token, refreshToken } = response.data;
+      console.log('Register response:', response); // Debug log
+      
+      // Handle different response structures
+      let user: User;
+      let token: string;
+      let refreshToken: string | undefined;
+      
+      if (response.data) {
+        // If data is nested in response.data
+        user = response.data.user;
+        token = response.data.token;
+        refreshToken = response.data.refreshToken;
+      } else {
+        // If data is at root level
+        user = (response as any).user;
+        token = (response as any).token;
+        refreshToken = (response as any).refreshToken;
+      }
+      
+      // Validate required fields
+      if (!user || !token) {
+        throw new Error('Invalid response from server: missing user or token');
+      }
+      
+      if (!user.id || !user.name || !user.email) {
+        throw new Error('Invalid user data received from server');
+      }
 
       // Store auth data
       await Promise.all([
         AsyncStorage.setItem(USER_KEY, JSON.stringify(user)),
         apiService.setAuthToken(token),
-        apiService.setRefreshToken(refreshToken),
+        refreshToken ? apiService.setRefreshToken(refreshToken) : Promise.resolve(),
       ]);
 
       dispatch({

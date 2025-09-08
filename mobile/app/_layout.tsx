@@ -4,6 +4,7 @@ import "./global.css";
 import { useFonts } from "expo-font";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "react-native";
+import { AppProviders } from '../src/contexts/AppProviders';
 
 export default function RootLayout() {
   const [fontsLoaded, error] = useFonts({
@@ -22,9 +23,11 @@ export default function RootLayout() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#100A1F" }}>
-      <StatusBar backgroundColor={"#100A1F"} barStyle="light-content" />
-      <Stack screenOptions={{ headerShown: false }} />
-    </SafeAreaView>
+    <AppProviders>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#100A1F" }}>
+        <StatusBar backgroundColor={"#100A1F"} barStyle="light-content" />
+        <Stack screenOptions={{ headerShown: false }} />
+      </SafeAreaView>
+    </AppProviders>
   );
 }

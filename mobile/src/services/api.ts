@@ -55,6 +55,15 @@ class ApiService {
         const originalRequest = error.config;
         
         if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+          // Check if we have a refresh token before attempting refresh
+          const refreshToken = await AsyncStorage.getItem(REFRESH_TOKEN_KEY);
+          
+          if (!refreshToken) {
+            // No refresh token available, clear auth data and reject
+            await this.clearAuthData();
+            return Promise.reject(this.handleError(error));
+          }
+
           if (this.isRefreshing) {
             try {
               const newToken = await this.refreshPromise;
@@ -79,10 +88,10 @@ class ApiService {
               return this.api(originalRequest);
             }
           } catch (refreshError) {
-            // Refresh failed, redirect to login
+            // Refresh failed, clear auth data
+            console.warn('Token refresh failed, clearing auth data');
             await this.clearAuthData();
-            // TODO: Navigate to login screen or dispatch logout action
-            return Promise.reject(refreshError);
+            return Promise.reject(this.handleError(error));
           } finally {
             this.isRefreshing = false;
             this.refreshPromise = null;
@@ -105,14 +114,23 @@ class ApiService {
         refreshToken,
       });
 
-      const { data } = response.data;
-      await AsyncStorage.setItem(TOKEN_KEY, data.accessToken);
-      if (data.refreshToken) {
-        await AsyncStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+      const responseData = response.data.data || response.data;
+      const newAccessToken = responseData.accessToken || responseData.token;
+      
+      if (!newAccessToken) {
+        throw new Error('Invalid refresh response: no access token received');
+      }
+      
+      await AsyncStorage.setItem(TOKEN_KEY, newAccessToken);
+      
+      // Update refresh token if a new one was provided
+      if (responseData.refreshToken) {
+        await AsyncStorage.setItem(REFRESH_TOKEN_KEY, responseData.refreshToken);
       }
 
-      return data.accessToken;
+      return newAccessToken;
     } catch (error) {
+      console.warn('Token refresh failed:', error);
       await this.clearAuthData();
       throw error;
     }
