@@ -50,14 +50,14 @@ export interface CoursesResponse {
 }
 
 export interface CourseDetails extends Course {
-  topics?: Array<{
+  topics?: {
     _id: string;
     title: string;
     description: string;
     order: number;
     isActive: boolean;
     lessonCount?: number;
-  }>;
+  }[];
   isEnrolled?: boolean;
   userProgress?: {
     progressPercentage: number;
@@ -98,6 +98,7 @@ class CoursesService {
       : `/courses?${params.toString()}`;
 
     const response = await apiService.get<CoursesResponse>(endpoint);
+    console.log("Courses response:", JSON.stringify(response.data, null, 2));
     return response.data;
   }
 

@@ -47,6 +47,7 @@ export default function CoursesScreen() {
 
       const currentFilters = newFilters || filters;
       const response: CoursesResponse = await coursesService.getCourses(currentFilters);
+      console.log("Courses response:", JSON.stringify(response, null, 2));
       
       if (append) {
         setCourses(prev => [...prev, ...response.courses]);

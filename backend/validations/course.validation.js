@@ -176,8 +176,8 @@ const getCoursesValidation = () => {
       .withMessage("Active must be a boolean"),
     query("sortBy")
       .optional()
-      .isIn(["title", "rating", "createdAt", "updatedAt"])
-      .withMessage("SortBy must be one of: title, rating, createdAt, updatedAt"),
+      .isIn(["title", "rating", "popularity", "newest", "oldest", "relevance", "createdAt", "updatedAt"])
+      .withMessage("SortBy must be one of: title, rating, popularity, newest, oldest, relevance, createdAt, updatedAt"),
     query("sortOrder")
       .optional()
       .isIn(["asc", "desc"])
