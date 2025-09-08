@@ -7,6 +7,7 @@ const { success } = require("./util/response.util");
 const connectDB = require("./config/db.config");
 
 const authRoutes = require("./routes/auth.route");
+const userRoutes = require("./routes/user.route");
 
 const app = express();
 connectDB();
@@ -29,5 +30,6 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 
 module.exports = app;

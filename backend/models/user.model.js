@@ -24,6 +24,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    profilePicture: {
+      url: {
+        type: String,
+        default: null,
+      },
+      publicId: {
+        type: String,
+        default: null,
+      },
+    },
     verificationCode: {
       type: String,
       default: null,
