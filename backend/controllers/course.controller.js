@@ -572,6 +572,21 @@ const getMyEnrollments = async (req, res) => {
 };
 
 // Get course analytics (Admin only)
+// Get all available course categories
+const getCategories = async (req, res) => {
+  try {
+    const categories = await Course.distinct('categories', { isActive: true });
+    
+    return success({
+      res,
+      message: "Categories retrieved successfully",
+      data: { categories: categories.sort() }
+    });
+  } catch (err) {
+    return error({ res, message: err?.message || "Failed to retrieve categories" });
+  }
+};
+
 const getCourseAnalytics = async (req, res) => {
   try {
     const { id } = req.params;
@@ -670,5 +685,6 @@ module.exports = {
   deleteCourse,
   enrollInCourse,
   getMyEnrollments,
+  getCategories,
   getCourseAnalytics,
 };

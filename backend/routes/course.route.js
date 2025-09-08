@@ -9,6 +9,7 @@ const {
   deleteCourse,
   enrollInCourse,
   getMyEnrollments,
+  getCategories,
   getCourseAnalytics,
 } = require("../controllers/course.controller");
 
@@ -31,6 +32,9 @@ router.get("/", getCoursesValidation(), handleValidationErrors, getAllCourses);
 
 // Advanced course search
 router.get("/search", searchCoursesValidation(), handleValidationErrors, searchCourses);
+
+// Get all available categories
+router.get("/categories", getCategories);
 
 // AUTHENTICATED USER ROUTES
 // Get user's enrolled courses (must be before authenticate middleware)

@@ -348,6 +348,35 @@ const logout = async (req, res) => {
   }
 };
 
+// Verify access token and return current user info
+const verifyToken = async (req, res) => {
+  try {
+    // authenticate middleware attaches the user to req.user if token is valid
+    const user = req.user;
+
+    if (!user) {
+      return error({ res, message: "Authentication failed", statusCode: 401 });
+    }
+
+    return success({
+      res,
+      message: "Token is valid",
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          isPremium: user.isPremium,
+          premiumExpiryDate: user.premiumExpiryDate,
+        },
+      },
+    });
+  } catch (err) {
+    return error({ res, message: err?.message || "Token verification failed" });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -355,4 +384,5 @@ module.exports = {
   resendVerificationCode,
   refreshToken,
   logout,
+  verifyToken,
 };
