@@ -249,7 +249,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       if (response.data) {
         registrationData = response.data;
       } else {
-        registrationData = response as RegistrationResponse;
+        registrationData = response as unknown as RegistrationResponse;
       }
 
       // Validate required fields
@@ -295,7 +295,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       if (response.data) {
         verificationData = response.data;
       } else {
-        verificationData = response as VerificationResponse;
+        verificationData = response as unknown as VerificationResponse;
       }
 
       // Validate required fields
