@@ -9,19 +9,27 @@ import {
   Alert,
   Modal,
   RefreshControl,
+  Image,
+  Dimensions,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import YoutubePlayer from 'react-native-youtube-iframe';
 import lessonsService, { 
   Lesson, 
   LessonContent, 
   LessonContentGroup,
   QuizSubmissionResponse 
 } from '../../src/services/lessonsService';
+import { useAuth } from '../../src/contexts/AuthContext';
+
+// Get screen dimensions for responsive content
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function LessonDetailScreen() {
   const { id: lessonId } = useLocalSearchParams<{ id: string }>();
+  const { isAuthenticated } = useAuth();
   const scrollViewRef = useRef<ScrollView>(null);
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,6 +112,16 @@ export default function LessonDetailScreen() {
   const submitQuiz = async () => {
     if (!lesson || !lesson.quiz) return;
 
+    // Only enrolled users can submit quizzes
+    if (!lesson.isEnrolled) {
+      Alert.alert(
+        'Enrollment Required',
+        'To take quizzes and track your progress, please enroll in this course.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
     // Check if all questions are answered
     if (quizAnswers.includes(-1)) {
       Alert.alert('Incomplete', 'Please answer all questions before submitting.');
@@ -137,6 +155,13 @@ export default function LessonDetailScreen() {
     }
   };
 
+  // Helper function to extract YouTube video ID from URL
+  const extractYouTubeId = (url: string): string | null => {
+    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+  };
+
   const renderContent = (content: LessonContent) => {
     switch (content.type) {
       case 'text':
@@ -159,6 +184,67 @@ export default function LessonDetailScreen() {
             <Ionicons name="link" size={16} color="#8B5FBF" />
             <Text style={styles.linkText}>{content.content}</Text>
           </TouchableOpacity>
+        );
+
+      case 'image':
+        return (
+          <View key={content.order} style={styles.imageContainer}>
+            <Image
+              source={{ uri: content.content }}
+              style={styles.contentImage}
+              resizeMode="contain"
+            />
+          </View>
+        );
+
+      case 'youtubeUrl':
+        const videoId = extractYouTubeId(content.content);
+        if (!videoId) {
+          return (
+            <View key={content.order} style={styles.errorContainer}>
+              <Text style={styles.errorText}>Invalid YouTube URL</Text>
+            </View>
+          );
+        }
+        return (
+          <View key={content.order} style={styles.videoContainer}>
+            <YoutubePlayer
+              height={220}
+              play={false}
+              videoId={videoId}
+              onChangeState={(state) => {
+                console.log('YouTube player state:', state);
+              }}
+            />
+          </View>
+        );
+
+      case 'video':
+        // Handle general video content - could be YouTube or other sources
+        if (typeof content.content === 'string' && content.content.includes('youtube')) {
+          const videoId = extractYouTubeId(content.content);
+          if (videoId) {
+            return (
+              <View key={content.order} style={styles.videoContainer}>
+                <YoutubePlayer
+                  height={220}
+                  play={false}
+                  videoId={videoId}
+                  onChangeState={(state) => {
+                    console.log('YouTube player state:', state);
+                  }}
+                />
+              </View>
+            );
+          }
+        }
+        // Fallback for other video types
+        return (
+          <View key={content.order} style={styles.unsupportedContent}>
+            <Text style={styles.unsupportedText}>
+              Video content (format not supported yet)
+            </Text>
+          </View>
         );
       
       default:
@@ -557,6 +643,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888888',
     fontStyle: 'italic',
+  },
+  imageContainer: {
+    marginBottom: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  contentImage: {
+    width: screenWidth - 40, // Full width minus padding
+    height: (screenWidth - 40) * 0.6, // 16:10 aspect ratio
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  videoContainer: {
+    marginBottom: 16,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  errorContainer: {
+    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#F44336',
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#F44336',
+    fontWeight: '500',
   },
   noContentContainer: {
     alignItems: 'center',
