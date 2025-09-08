@@ -23,6 +23,7 @@ const CurriculumPreviewMobile = () => {
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isMobile, setIsMobile] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
   const tracks = [
     {
@@ -98,6 +99,8 @@ const CurriculumPreviewMobile = () => {
   ];
 
   useEffect(() => {
+    setIsClient(true);
+    
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -197,7 +200,7 @@ const CurriculumPreviewMobile = () => {
         />
         
         {/* Floating Particles - Fewer on mobile */}
-        {particles.slice(0, isMobile ? 8 : 15).map((particle) => (
+        {particles.slice(0, isClient && isMobile ? 8 : 15).map((particle) => (
           <motion.div
             key={particle.id}
             className="absolute w-1 h-1 bg-purple-300/50 rounded-full"
@@ -222,7 +225,7 @@ const CurriculumPreviewMobile = () => {
       </div>
 
       {/* Mouse Follow Effect - Desktop only */}
-      {!isMobile && (
+      {isClient && !isMobile && (
         <motion.div
           className="fixed w-6 h-6 bg-purple-400/20 rounded-full blur-sm pointer-events-none z-20"
           animate={{
