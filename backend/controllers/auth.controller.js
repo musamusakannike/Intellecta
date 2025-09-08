@@ -125,8 +125,57 @@ const resendVerificationCode = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Find user by email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return error({ res, message: "Invalid email or password", statusCode: 401 });
+    }
+    
+    // Check if user is verified
+    if (!user.verified) {
+      return error({ res, message: "Please verify your email before logging in", statusCode: 401 });
+    }
+    
+    // Check password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return error({ res, message: "Invalid email or password", statusCode: 401 });
+    }
+    
+    // Generate token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "30d" });
+    
+    // Update last login (optional)
+    user.updatedAt = new Date();
+    await user.save();
+    
+    return success({
+      res,
+      message: "Login successful",
+      data: {
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          isPremium: user.isPremium,
+          premiumExpiryDate: user.premiumExpiryDate
+        }
+      }
+    });
+  } catch (err) {
+    return error({ res, message: err?.message || "Login failed" });
+  }
+};
+
 module.exports = {
   register,
+  login,
   verifyEmail,
   resendVerificationCode,
 };
