@@ -19,7 +19,6 @@ import lessonsService, {
   LessonContentGroup,
   QuizSubmissionResponse 
 } from '../../src/services/lessonsService';
-import { useAuth } from '../../src/contexts/AuthContext';
 
 export default function LessonDetailScreen() {
   const { id: lessonId } = useLocalSearchParams<{ id: string }>();

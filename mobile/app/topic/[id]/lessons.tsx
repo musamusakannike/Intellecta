@@ -47,7 +47,7 @@ export default function TopicLessonsScreen() {
     loadLessons();
   };
 
-  const handleLessonPress = (lesson: Lesson) => {
+  const handleLessonPress = (lesson: Lesson, isFirstLesson: boolean = false) => {
     if (!isAuthenticated) {
       Alert.alert(
         'Authentication Required',
@@ -60,7 +60,8 @@ export default function TopicLessonsScreen() {
       return;
     }
 
-    if (!lesson.isEnrolled) {
+    // First lesson is always accessible for enrolled users
+    if (!lesson.isEnrolled && !isFirstLesson) {
       Alert.alert(
         'Enrollment Required',
         'You need to enroll in this course to access lessons.',
@@ -96,13 +97,14 @@ export default function TopicLessonsScreen() {
   const renderLessonItem = ({ item, index }: { item: Lesson; index: number }) => {
     const progress = item.userProgress;
     const isCompleted = progress?.isCompleted || false;
-    const isLocked = !item.isEnrolled;
+    const isFirstLesson = index === 0; // First lesson in the list
+    const isLocked = !item.isEnrolled && !isFirstLesson; // First lesson is never locked if user is authenticated
     const progressColor = getProgressColor(progress);
 
     return (
       <TouchableOpacity
         style={[styles.lessonCard, isLocked && styles.lockedCard]}
-        onPress={() => handleLessonPress(item)}
+        onPress={() => handleLessonPress(item, isFirstLesson)}
         disabled={isLocked}
       >
         <View style={styles.lessonHeader}>
@@ -136,6 +138,13 @@ export default function TopicLessonsScreen() {
 
         {/* Progress and stats row */}
         <View style={styles.lessonStats}>
+          {isFirstLesson && !item.isEnrolled && (
+            <View style={styles.statItem}>
+              <Ionicons name="gift-outline" size={16} color="#4CAF50" />
+              <Text style={[styles.statText, { color: '#4CAF50' }]}>Free Preview</Text>
+            </View>
+          )}
+          
           {item.hasQuiz && (
             <View style={styles.statItem}>
               <Ionicons name="help-circle-outline" size={16} color="#8B5FBF" />
