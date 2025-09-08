@@ -261,7 +261,7 @@ export default function CourseDetailScreen() {
 
       {course.enrollment && (
         <View style={styles.enrollSection}>
-          <TouchableOpacity style={styles.continueButton}>
+          <TouchableOpacity style={styles.continueButton} onPress={() => router.push(`/course/${id}/topics`)} >
             <Ionicons name="play-circle" size={20} color="#8B5FBF" />
             <Text style={styles.continueButtonText}>Continue Learning</Text>
           </TouchableOpacity>
