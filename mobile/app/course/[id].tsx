@@ -164,13 +164,19 @@ export default function CourseDetailScreen() {
 
           {/* Stats */}
           <View style={styles.statsSection}>
-            {course.enrollmentCount !== undefined && (
-              <View style={styles.statItem}>
-                <Ionicons name="people" size={20} color="#8B5FBF" />
-                <Text style={styles.statLabel}>Students</Text>
-                <Text style={styles.statValue}>{formatNumber(course.enrollmentCount)}</Text>
-              </View>
-            )}
+            {(() => {
+              const studentsCount = course.stats?.enrollmentCount ?? course.enrollmentCount;
+              if (studentsCount !== undefined) {
+                return (
+                  <View style={styles.statItem}>
+                    <Ionicons name="people" size={20} color="#8B5FBF" />
+                    <Text style={styles.statLabel}>Students</Text>
+                    <Text style={styles.statValue}>{formatNumber(studentsCount)}</Text>
+                  </View>
+                );
+              }
+              return null;
+            })()}
             
             {course.topicCount !== undefined && (
               <View style={styles.statItem}>
@@ -194,23 +200,31 @@ export default function CourseDetailScreen() {
           </View>
 
           {/* User Progress (if enrolled) */}
-          {course.isEnrolled && course.userProgress && (
+          {course.enrollment && (
             <View style={styles.progressSection}>
               <Text style={styles.sectionTitle}>Your Progress</Text>
               <View style={styles.progressCard}>
                 <View style={styles.progressInfo}>
                   <Text style={styles.progressPercentage}>
-                    {course.userProgress.progressPercentage}%
+                    {course.enrollment.progressPercentage}%
                   </Text>
                   <Text style={styles.progressText}>
-                    {course.userProgress.completedTopics} of {course.topicCount} topics completed
+                    {(() => {
+                      const completedTopics = course.enrollment?.topicsProgress
+                        ? course.enrollment.topicsProgress.filter(tp => tp.isCompleted).length
+                        : undefined;
+                      if (completedTopics !== undefined && course.topicCount !== undefined) {
+                        return `${completedTopics} of ${course.topicCount} topics completed`;
+                      }
+                      return `Progress: ${course.enrollment.progressPercentage}%`;
+                    })()}
                   </Text>
                 </View>
                 <View style={styles.progressBar}>
                   <View 
                     style={[
                       styles.progressFill, 
-                      { width: `${course.userProgress.progressPercentage}%` }
+                      { width: `${course.enrollment.progressPercentage}%` }
                     ]} 
                   />
                 </View>
@@ -221,7 +235,7 @@ export default function CourseDetailScreen() {
       </ScrollView>
 
       {/* Enroll Button */}
-      {!course.isEnrolled && (
+      {!course.enrollment && (
         <View style={styles.enrollSection}>
           <LinearGradient
             colors={['#8B5FBF', '#D946EF']}
@@ -245,7 +259,7 @@ export default function CourseDetailScreen() {
         </View>
       )}
 
-      {course.isEnrolled && (
+      {course.enrollment && (
         <View style={styles.enrollSection}>
           <TouchableOpacity style={styles.continueButton}>
             <Ionicons name="play-circle" size={20} color="#8B5FBF" />

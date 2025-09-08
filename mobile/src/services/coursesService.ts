@@ -1,6 +1,6 @@
 import apiService from "./api";
 
-// Course types
+// Course types (aligned with backend API)
 export interface Course {
   _id: string;
   title: string;
@@ -20,10 +20,43 @@ export interface Course {
       5: number;
     };
   };
+  // Present on list/search responses
   enrollmentCount?: number;
   topicCount?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+// Enrollment types (aligned with backend Enrollment model)
+export interface EnrollmentLessonProgress {
+  lesson: string; // lesson id
+  isCompleted: boolean;
+  completedAt?: string | null;
+  quizScore?: number | null;
+  timeSpent: number; // minutes
+}
+
+export interface EnrollmentTopicProgress {
+  topic: string; // topic id
+  isCompleted: boolean;
+  completedAt?: string | null;
+  lessonsProgress: EnrollmentLessonProgress[];
+  progressPercentage: number;
+}
+
+export interface Enrollment {
+  _id: string;
+  user: string | { _id: string; name?: string; email?: string };
+  course: string | { _id: string; title: string; description?: string; image?: string };
+  enrolledAt: string;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  isCompleted: boolean;
+  progressPercentage: number;
+  topicsProgress?: EnrollmentTopicProgress[];
+  totalTimeSpent: number; // minutes
+  lastAccessedAt: string;
+  status: "enrolled" | "in_progress" | "completed" | "dropped";
 }
 
 export interface CourseFilters {
@@ -64,24 +97,28 @@ export interface CourseDetails extends Course {
     isActive: boolean;
     lessonCount?: number;
   }[];
-  isEnrolled?: boolean;
-  userProgress?: {
-    progressPercentage: number;
-    completedTopics: number;
-    totalTimeSpent: number;
-    lastAccessedAt: string;
+  topicCount?: number;
+  totalLessons?: number;
+  // Present when the authenticated user is enrolled in this course
+  enrollment?: Enrollment | null;
+  // Stats present on detail response
+  stats?: {
+    enrollmentCount: number;
+    completedCount: number;
+    completionRate: number; // percentage
   };
+  // Optional recent reviews not currently used in mobile UI
+  recentReviews?: Array<{
+    _id: string;
+    user: { _id: string; name: string; profilePicture?: string };
+    rating?: number;
+    comment?: string;
+    createdAt: string;
+  }>;
 }
 
 export interface EnrollmentResponse {
-  enrollment: {
-    _id: string;
-    user: string;
-    course: string;
-    enrolledAt: string;
-    status: "enrolled" | "in_progress" | "completed" | "dropped";
-    progressPercentage: number;
-  };
+  enrollment: Enrollment;
 }
 
 class CoursesService {
