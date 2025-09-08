@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#100A1F',
     padding: 20,
   },
   terminal: {
