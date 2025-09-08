@@ -85,7 +85,7 @@ const Hero = () => {
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.5, 0.3],
           }}
-          transition={{ duration: 4, repeat: Infinity }}
+          transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY }}
         />
         <motion.div
           className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-violet-400/20 rounded-full blur-3xl"
@@ -93,7 +93,7 @@ const Hero = () => {
             scale: [1.2, 1, 1.2],
             opacity: [0.4, 0.2, 0.4],
           }}
-          transition={{ duration: 5, repeat: Infinity, delay: 1 }}
+          transition={{ duration: 5, repeat: Number.POSITIVE_INFINITY, delay: 1 }}
         />
         
         {/* Floating Particles */}
@@ -113,7 +113,7 @@ const Hero = () => {
             }}
             transition={{
               duration: 8,
-              repeat: Infinity,
+              repeat: Number.POSITIVE_INFINITY,
               delay: particle.delay,
               ease: "easeInOut"
             }}
@@ -133,7 +133,7 @@ const Hero = () => {
           }}
           transition={{
             duration: 6,
-            repeat: Infinity,
+            repeat: Number.POSITIVE_INFINITY,
             delay: element.delay,
             ease: "easeInOut"
           }}
@@ -175,7 +175,7 @@ const Hero = () => {
               animate={{ 
                 backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
               }}
-              transition={{ duration: 3, repeat: Infinity }}
+              transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
             >
               Kodr
             </motion.h1>
@@ -193,7 +193,7 @@ const Hero = () => {
               <motion.span
                 className="inline-block ml-3 text-transparent bg-gradient-to-r from-yellow-300 to-purple-400 bg-clip-text"
                 animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
               >
                 Stars ✨
               </motion.span>
@@ -233,7 +233,7 @@ const Hero = () => {
                   {codeSnippets[currentCodeIndex]}
                   <motion.span
                     animate={{ opacity: [1, 0, 1] }}
-                    transition={{ duration: 1, repeat: Infinity }}
+                    transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY }}
                     className="text-purple-400"
                   >
                     |
@@ -261,7 +261,7 @@ const Hero = () => {
                 <span>Start Learning</span>
                 <motion.div
                   animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
                 >
                   <ArrowRight className="w-5 h-5" />
                 </motion.div>

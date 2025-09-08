@@ -171,7 +171,7 @@ const CurriculumPreview = () => {
             scale: [1, 1.3, 1],
             opacity: [0.2, 0.4, 0.2],
           }}
-          transition={{ duration: 6, repeat: Infinity }}
+          transition={{ duration: 6, repeat: Number.POSITIVE_INFINITY }}
         />
         <motion.div
           className="absolute bottom-1/3 right-1/6 w-80 h-80 bg-violet-400/10 rounded-full blur-3xl"
@@ -179,7 +179,7 @@ const CurriculumPreview = () => {
             scale: [1.2, 0.8, 1.2],
             opacity: [0.3, 0.1, 0.3],
           }}
-          transition={{ duration: 7, repeat: Infinity, delay: 2 }}
+          transition={{ duration: 7, repeat: Number.POSITIVE_INFINITY, delay: 2 }}
         />
         
         {/* Floating Particles */}
@@ -199,7 +199,7 @@ const CurriculumPreview = () => {
             }}
             transition={{
               duration: 10,
-              repeat: Infinity,
+              repeat: Number.POSITIVE_INFINITY,
               delay: particle.delay,
               ease: "easeInOut"
             }}
@@ -294,7 +294,7 @@ const CurriculumPreview = () => {
                         rotate: [0, 10, -10, 0],
                         scale: [1, 1.1, 1]
                       }}
-                      transition={{ duration: 4, repeat: Infinity }}
+                      transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY }}
                     >
                       <div className={`p-4 bg-gradient-to-r ${currentTrackData.color} rounded-2xl shadow-xl`}>
                         <currentTrackData.icon className="w-8 h-8 text-white" />
@@ -400,7 +400,7 @@ const CurriculumPreview = () => {
                           <span>Start This Journey</span>
                           <motion.div
                             animate={{ x: [0, 5, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
+                            transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY }}
                           >
                             <ChevronRight className="w-5 h-5" />
                           </motion.div>

@@ -106,7 +106,7 @@ const Features = () => {
             scale: [1, 1.3, 1],
             opacity: [0.2, 0.4, 0.2],
           }}
-          transition={{ duration: 6, repeat: Infinity }}
+          transition={{ duration: 6, repeat: Number.POSITIVE_INFINITY }}
         />
         <motion.div
           className="absolute bottom-20 left-1/4 w-80 h-80 bg-violet-400/15 rounded-full blur-3xl"
@@ -114,7 +114,7 @@ const Features = () => {
             scale: [1.2, 0.8, 1.2],
             opacity: [0.3, 0.1, 0.3],
           }}
-          transition={{ duration: 7, repeat: Infinity, delay: 2 }}
+          transition={{ duration: 7, repeat: Number.POSITIVE_INFINITY, delay: 2 }}
         />
 
         {/* Floating Background Icons */}
@@ -130,7 +130,7 @@ const Features = () => {
             }}
             transition={{
               duration: 8,
-              repeat: Infinity,
+              repeat: Number.POSITIVE_INFINITY,
               delay: item.delay,
               ease: "easeInOut"
             }}
@@ -152,7 +152,7 @@ const Features = () => {
             animate={{ 
               backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
             }}
-            transition={{ duration: 4, repeat: Infinity }}
+            transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY }}
             className="inline-block"
           >
             <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-purple-200 via-violet-300 to-purple-200 bg-clip-text text-transparent mb-4">
@@ -202,7 +202,7 @@ const Features = () => {
                   animate={{
                     backgroundPosition: hoveredCard === feature.id ? ['0% 0%', '100% 100%', '0% 0%'] : '0% 0%'
                   }}
-                  transition={{ duration: 2, repeat: Infinity }}
+                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                 />
 
                 {/* Icon Container */}
@@ -229,7 +229,7 @@ const Features = () => {
                     animate={{
                       opacity: hoveredCard === feature.id ? [0, 0.5, 0] : 0
                     }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                   />
                 </motion.div>
 
@@ -267,7 +267,7 @@ const Features = () => {
                         }}
                         transition={{
                           duration: 2,
-                          repeat: Infinity,
+                          repeat: Number.POSITIVE_INFINITY,
                           delay: i * 0.2
                         }}
                       />
