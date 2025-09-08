@@ -22,14 +22,12 @@ import lessonsService, {
   LessonContentGroup,
   QuizSubmissionResponse 
 } from '../../src/services/lessonsService';
-import { useAuth } from '../../src/contexts/AuthContext';
 
 // Get screen dimensions for responsive content
 const { width: screenWidth } = Dimensions.get('window');
 
 export default function LessonDetailScreen() {
   const { id: lessonId } = useLocalSearchParams<{ id: string }>();
-  const { isAuthenticated } = useAuth();
   const scrollViewRef = useRef<ScrollView>(null);
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
@@ -743,26 +741,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 12,
   },
-  errorContainer: {
-    flex: 1,
-    backgroundColor: '#100A1F',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-  },
   errorTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginTop: 16,
     marginBottom: 8,
-  },
-  errorText: {
-    fontSize: 16,
-    color: '#CCCCCC',
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 24,
   },
   backButton: {
     backgroundColor: '#8B5FBF',
