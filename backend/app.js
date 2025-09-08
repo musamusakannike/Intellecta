@@ -9,6 +9,8 @@ const connectDB = require("./config/db.config");
 const authRoutes = require("./routes/auth.route");
 const userRoutes = require("./routes/user.route");
 const courseRoutes = require("./routes/course.route");
+const topicRoutes = require("./routes/topic.route");
+const lessonRoutes = require("./routes/lesson.route");
 
 const app = express();
 connectDB();
@@ -33,5 +35,7 @@ app.get("/health", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/courses", courseRoutes);
+app.use("/api/topics", topicRoutes);
+app.use("/api/lessons", lessonRoutes);
 
 module.exports = app;
