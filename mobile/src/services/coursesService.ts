@@ -1,4 +1,4 @@
-import apiService from './api';
+import apiService from "./api";
 
 // Course types
 export interface Course {
@@ -32,8 +32,14 @@ export interface CourseFilters {
   featured?: boolean;
   minRating?: number;
   maxRating?: number;
-  sortBy?: 'title' | 'rating' | 'popularity' | 'newest' | 'oldest' | 'relevance';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?:
+    | "title"
+    | "rating"
+    | "popularity"
+    | "newest"
+    | "oldest"
+    | "relevance";
+  sortOrder?: "asc" | "desc";
   page?: number;
   limit?: number;
 }
@@ -73,7 +79,7 @@ export interface EnrollmentResponse {
     user: string;
     course: string;
     enrolledAt: string;
-    status: 'enrolled' | 'in_progress' | 'completed' | 'dropped';
+    status: "enrolled" | "in_progress" | "completed" | "dropped";
     progressPercentage: number;
   };
 }
@@ -82,18 +88,21 @@ class CoursesService {
   // Get all courses with filtering and pagination
   async getCourses(filters: CourseFilters = {}): Promise<CoursesResponse> {
     const params = new URLSearchParams();
-    
-    if (filters.search) params.append('search', filters.search);
-    if (filters.category) params.append('category', filters.category);
-    if (filters.featured !== undefined) params.append('featured', filters.featured.toString());
-    if (filters.minRating) params.append('minRating', filters.minRating.toString());
-    if (filters.maxRating) params.append('maxRating', filters.maxRating.toString());
-    if (filters.sortBy) params.append('sortBy', filters.sortBy);
-    if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
-    if (filters.page) params.append('page', filters.page.toString());
-    if (filters.limit) params.append('limit', filters.limit.toString());
 
-    const endpoint = filters.search 
+    if (filters.search) params.append("search", filters.search);
+    if (filters.category) params.append("category", filters.category);
+    if (filters.featured !== undefined)
+      params.append("featured", filters.featured.toString());
+    if (filters.minRating)
+      params.append("minRating", filters.minRating.toString());
+    if (filters.maxRating)
+      params.append("maxRating", filters.maxRating.toString());
+    if (filters.sortBy) params.append("sortBy", filters.sortBy);
+    if (filters.sortOrder) params.append("sortOrder", filters.sortOrder);
+    if (filters.page) params.append("page", filters.page.toString());
+    if (filters.limit) params.append("limit", filters.limit.toString());
+
+    const endpoint = filters.search
       ? `/courses/search?${params.toString()}`
       : `/courses?${params.toString()}`;
 
@@ -104,25 +113,33 @@ class CoursesService {
 
   // Get course details by ID
   async getCourseById(courseId: string): Promise<CourseDetails> {
-    const response = await apiService.get<CourseDetails>(`/courses/${courseId}`);
+    const response = await apiService.get<CourseDetails>(
+      `/courses/${courseId}`
+    );
     return response.data;
   }
 
   // Enroll in a course
   async enrollInCourse(courseId: string): Promise<EnrollmentResponse> {
-    const response = await apiService.post<EnrollmentResponse>(`/courses/${courseId}/enroll`);
+    const response = await apiService.post<EnrollmentResponse>(
+      `/courses/${courseId}/enroll`
+    );
     return response.data;
   }
 
   // Get user's enrolled courses
   async getEnrolledCourses(): Promise<Course[]> {
-    const response = await apiService.get<{ courses: Course[] }>('/courses/enrolled');
+    const response = await apiService.get<{ courses: Course[] }>(
+      "/courses/enrolled"
+    );
     return response.data.courses;
   }
 
   // Get course categories
   async getCategories(): Promise<string[]> {
-    const response = await apiService.get<{ categories: string[] }>('/courses/categories');
+    const response = await apiService.get<{ categories: string[] }>(
+      "/courses/categories"
+    );
     return response.data.categories;
   }
 
@@ -133,22 +150,28 @@ class CoursesService {
   }
 
   // Search courses with text
-  async searchCourses(searchTerm: string, filters: Omit<CourseFilters, 'search'> = {}): Promise<CoursesResponse> {
+  async searchCourses(
+    searchTerm: string,
+    filters: Omit<CourseFilters, "search"> = {}
+  ): Promise<CoursesResponse> {
     return this.getCourses({ ...filters, search: searchTerm });
   }
 
   // Get popular courses (by enrollment count)
   async getPopularCourses(limit: number = 10): Promise<Course[]> {
-    const response = await this.getCourses({ 
-      sortBy: 'popularity', 
-      sortOrder: 'desc', 
-      limit 
+    const response = await this.getCourses({
+      sortBy: "popularity",
+      sortOrder: "desc",
+      limit,
     });
     return response.courses;
   }
 
   // Get courses by category
-  async getCoursesByCategory(category: string, filters: Omit<CourseFilters, 'category'> = {}): Promise<CoursesResponse> {
+  async getCoursesByCategory(
+    category: string,
+    filters: Omit<CourseFilters, "category"> = {}
+  ): Promise<CoursesResponse> {
     return this.getCourses({ ...filters, category });
   }
 }

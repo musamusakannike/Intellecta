@@ -321,12 +321,10 @@ const getCourseById = async (req, res) => {
       res,
       message: "Course retrieved successfully",
       data: {
-        course: {
           ...course.toObject(),
           topics: topicsWithLessons,
           topicCount: topics.length,
           totalLessons,
-        },
         enrollment: enrollmentInfo,
         stats: {
           enrollmentCount,

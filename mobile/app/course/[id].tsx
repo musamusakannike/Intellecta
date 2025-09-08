@@ -30,6 +30,7 @@ export default function CourseDetailScreen() {
     try {
       setLoading(true);
       const courseData = await coursesService.getCourseById(id!);
+      console.log("Course data:", JSON.stringify(courseData, null, 2));
       setCourse(courseData);
     } catch (error) {
       console.error('Failed to load course details:', error);
@@ -106,7 +107,7 @@ export default function CourseDetailScreen() {
         <Ionicons name="alert-circle" size={64} color="#FF6B6B" />
         <Text style={styles.errorTitle}>Course Not Found</Text>
         <Text style={styles.errorText}>
-          The course you're looking for doesn't exist or has been removed.
+          The course you&apos;re looking for doesn&apos;t exist or has been removed.
         </Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Go Back</Text>
