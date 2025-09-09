@@ -80,15 +80,6 @@ export default function TopicLessonsScreen() {
     router.push(`/lesson/${lesson._id}`);
   };
 
-  const formatDuration = (timeSpent: number) => {
-    if (timeSpent < 60) {
-      return `${Math.round(timeSpent)}m`;
-    }
-    const hours = Math.floor(timeSpent / 60);
-    const minutes = Math.round(timeSpent % 60);
-    return `${hours}h ${minutes}m`;
-  };
-
   const getProgressColor = (progress?: { isCompleted: boolean; quizScore?: number | null } | null) => {
     if (!progress) return '#666';
     if (progress.isCompleted) {
@@ -147,13 +138,6 @@ export default function TopicLessonsScreen() {
             <View style={styles.statItem}>
               <Ionicons name="help-circle-outline" size={16} color="#8B5FBF" />
               <Text style={styles.statText}>Quiz</Text>
-            </View>
-          )}
-          
-          {progress?.timeSpent && progress.timeSpent > 0 && (
-            <View style={styles.statItem}>
-              <Ionicons name="time-outline" size={16} color="#8B5FBF" />
-              <Text style={styles.statText}>{formatDuration(progress.timeSpent)}</Text>
             </View>
           )}
           
