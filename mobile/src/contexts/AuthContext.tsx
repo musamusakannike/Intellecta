@@ -380,7 +380,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
   const updateUser = async (userData: Partial<User>): Promise<void> => {
     try {
-      const response = await apiService.put<User>("/user/profile", userData);
+      const response = await apiService.put<User>("/users/profile", userData);
       const updatedUser = response.data;
 
       // Update stored user data

@@ -53,7 +53,7 @@ export interface ProfileData {
 class ProfileService {
   async getProfileData(): Promise<ProfileData> {
     try {
-      const response = await apiService.get<ProfileData>('/user/profile-data');
+      const response = await apiService.get<ProfileData>('/users/profile-data');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch profile data:', error);
@@ -64,7 +64,7 @@ class ProfileService {
 
   async getAchievements(): Promise<Achievement[]> {
     try {
-      const response = await apiService.get<Achievement[]>('/user/achievements');
+      const response = await apiService.get<Achievement[]>('/users/achievements');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch achievements:', error);
@@ -74,7 +74,7 @@ class ProfileService {
 
   async getCertificates(): Promise<Certificate[]> {
     try {
-      const response = await apiService.get<Certificate[]>('/user/certificates');
+      const response = await apiService.get<Certificate[]>('/users/certificates');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch certificates:', error);

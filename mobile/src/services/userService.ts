@@ -16,7 +16,7 @@ export interface ProfilePictureResponse {
 class UserService {
   async updateProfile(data: UpdateProfileData): Promise<any> {
     try {
-      const response = await apiService.put('/user/profile', data);
+      const response = await apiService.put('/users/profile', data);
       return response.data;
     } catch (error) {
       console.error('Failed to update profile:', error);
@@ -33,7 +33,7 @@ class UserService {
         name: 'profile.jpg',
       } as any);
 
-      const response = await apiService.post<ProfilePictureResponse>('/user/profile-picture', formData, {
+      const response = await apiService.post<ProfilePictureResponse>('/users/profile-picture', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -48,7 +48,7 @@ class UserService {
 
   async deleteProfilePicture(): Promise<any> {
     try {
-      const response = await apiService.delete('/user/profile-picture');
+      const response = await apiService.delete('/users/profile-picture');
       return response.data;
     } catch (error) {
       console.error('Failed to delete profile picture:', error);
@@ -58,7 +58,7 @@ class UserService {
 
   async changePassword(currentPassword: string, newPassword: string): Promise<void> {
     try {
-      await apiService.put('/user/change-password', {
+      await apiService.put('/users/change-password', {
         currentPassword,
         newPassword,
       });
@@ -70,7 +70,7 @@ class UserService {
 
   async deleteAccount(): Promise<void> {
     try {
-      await apiService.delete('/user/account');
+      await apiService.delete('/users/account');
     } catch (error) {
       console.error('Failed to delete account:', error);
       throw error;
@@ -79,7 +79,7 @@ class UserService {
 
   async updateExpoPushToken(token: string): Promise<void> {
     try {
-      await apiService.put('/user/expo-token', { expoPushToken: token });
+      await apiService.put('/users/expo-token', { expoPushToken: token });
     } catch (error) {
       console.error('Failed to update expo push token:', error);
       throw error;
@@ -94,7 +94,7 @@ class UserService {
     daysUntilExpiry?: number;
   }> {
     try {
-      const response = await apiService.get('/user/premium/access');
+      const response = await apiService.get('/users/premium/access');
       return response.data;
     } catch (error) {
       console.error('Failed to check premium access:', error);
@@ -103,11 +103,11 @@ class UserService {
   }
 
   async getPremiumFeatures(): Promise<{
-    features: Array<{
+    features: {
       name: string;
       description: string;
       icon: string;
-    }>;
+    }[];
     pricing: {
       amount: number;
       currency: string;
@@ -116,7 +116,7 @@ class UserService {
     };
   }> {
     try {
-      const response = await apiService.get('/user/premium/features');
+      const response = await apiService.get('/users/premium/features');
       return response.data;
     } catch (error) {
       console.error('Failed to get premium features:', error);
