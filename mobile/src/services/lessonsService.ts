@@ -50,6 +50,7 @@ export interface Lesson {
   isEnrolled?: boolean;
   hasQuiz?: boolean;
   quizQuestionCount?: number;
+  isLocked: boolean;
 }
 
 export interface LessonProgress {

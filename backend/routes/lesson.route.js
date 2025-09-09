@@ -27,17 +27,14 @@ const {
 
 const router = express.Router();
 
-// PUBLIC/AUTHENTICATED ROUTES
+// Apply authentication to routes below
+router.use(authenticate);
 
 // Get all lessons for a topic
 router.get("/topic/:topicId", getLessonsValidation(), handleValidationErrors, getLessonsByTopic);
 
 // Get lesson by ID with full content
 router.get("/:id", lessonIdValidation(), handleValidationErrors, getLessonById);
-
-// AUTHENTICATED USER ROUTES
-// Apply authentication to routes below
-router.use(authenticate);
 
 // Submit quiz answers
 router.post("/:id/quiz/submit", submitQuizValidation(), handleValidationErrors, submitQuiz);

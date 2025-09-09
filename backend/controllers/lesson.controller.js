@@ -8,7 +8,8 @@ const mongoose = require("mongoose");
 // Create a new lesson (Admin only)
 const createLesson = async (req, res) => {
   try {
-    const { title, description, topic, contentGroups, quiz, order, isActive } = req.body;
+    const { title, description, topic, contentGroups, quiz, order, isActive } =
+      req.body;
 
     // Check if topic exists
     const topicExists = await Topic.findById(topic);
@@ -19,7 +20,11 @@ const createLesson = async (req, res) => {
     // Check if lesson with same order already exists in this topic
     const existingLesson = await Lesson.findOne({ topic, order });
     if (existingLesson) {
-      return error({ res, message: "Lesson with this order already exists in the topic", statusCode: 409 });
+      return error({
+        res,
+        message: "Lesson with this order already exists in the topic",
+        statusCode: 409,
+      });
     }
 
     const lesson = new Lesson({
@@ -35,21 +40,20 @@ const createLesson = async (req, res) => {
     await lesson.save();
 
     // Populate topic and course information
-    const populatedLesson = await Lesson.findById(lesson._id)
-      .populate({
-        path: 'topic',
-        select: 'title course',
-        populate: {
-          path: 'course',
-          select: 'title'
-        }
-      });
+    const populatedLesson = await Lesson.findById(lesson._id).populate({
+      path: "topic",
+      select: "title course",
+      populate: {
+        path: "course",
+        select: "title",
+      },
+    });
 
     return success({
       res,
       message: "Lesson created successfully",
       statusCode: 201,
-      data: { lesson: populatedLesson }
+      data: { lesson: populatedLesson },
     });
   } catch (err) {
     return error({ res, message: err?.message || "Failed to create lesson" });
@@ -60,7 +64,8 @@ const createLesson = async (req, res) => {
 const getLessonsByTopic = async (req, res) => {
   try {
     const { topicId } = req.params;
-    const includeInactive = req.query.includeInactive === 'true';
+    const includeInactive = req.query.includeInactive === "true";
+    const userId = req.user._id;
 
     // Check if topic exists
     const topicExists = await Topic.findById(topicId);
@@ -70,54 +75,78 @@ const getLessonsByTopic = async (req, res) => {
 
     // Build filter
     const filter = { topic: topicId };
-    if (!includeInactive && req.user?.role !== 'admin') {
+    if (!includeInactive && req.user?.role !== "admin") {
       filter.isActive = true;
     }
 
     const lessons = await Lesson.find(filter)
       .populate({
-        path: 'topic',
-        select: 'title course',
+        path: "topic",
+        select: "title course",
         populate: {
-          path: 'course',
-          select: 'title'
-        }
+          path: "course",
+          select: "title",
+        },
       })
       .sort({ order: 1 });
 
     // Get user progress if logged in
     let userProgress = {};
-    if (req.user?._id) {
-      const enrollment = await Enrollment.findOne({ 
-        user: req.user._id, 
-        course: topicExists.course 
+    let isEnrolled = false;
+    if (userId) {
+      const enrollment = await Enrollment.findOne({
+        user: userId,
+        course: topicExists.course,
       });
-      
+
       if (enrollment) {
+        isEnrolled = true;
         const topicProgress = enrollment.topicsProgress.find(
-          tp => tp.topic.toString() === topicId
+          (tp) => tp.topic.toString() === topicId
         );
-        
+
         if (topicProgress) {
-          topicProgress.lessonsProgress.forEach(lp => {
+          topicProgress.lessonsProgress.forEach((lp) => {
             userProgress[lp.lesson.toString()] = lp;
           });
         }
       }
     }
 
-    const lessonsWithProgress = lessons.map(lesson => ({
-      ...lesson.toObject(),
-      userProgress: userProgress[lesson._id.toString()] || null,
-    }));
+    const lessonsWithProgress = lessons.map((lesson, index) => {
+      const progress = userProgress[lesson._id.toString()] || null;
+      let isLocked = true;
+
+      if (index === 0) {
+        // The first lesson is always unlocked for enrolled users
+        isLocked = false;
+      } else {
+        // Subsequent lessons are unlocked if the previous one is completed
+        const prevLesson = lessons[index - 1];
+        const prevLessonProgress = userProgress[prevLesson._id.toString()];
+        if (prevLessonProgress && prevLessonProgress.isCompleted) {
+          isLocked = false;
+        }
+      }
+
+      return {
+        ...lesson.toObject(),
+        userProgress: progress,
+        isEnrolled,
+        isLocked,
+      };
+    });
 
     return success({
       res,
       message: "Lessons retrieved successfully",
-      data: { lessons: lessonsWithProgress }
+      data: { lessons: lessonsWithProgress },
     });
   } catch (err) {
-    return error({ res, message: err?.message || "Failed to retrieve lessons" });
+    return error({
+      res,
+      message: err?.message || "Failed to retrieve lessons",
+    });
   }
 };
 
@@ -127,44 +156,43 @@ const getLessonById = async (req, res) => {
     const { id } = req.params;
     const userId = req.user?._id;
 
-    const lesson = await Lesson.findById(id)
-      .populate({
-        path: 'topic',
-        select: 'title course',
-        populate: {
-          path: 'course',
-          select: 'title'
-        }
-      });
+    const lesson = await Lesson.findById(id).populate({
+      path: "topic",
+      select: "title course",
+      populate: {
+        path: "course",
+        select: "title",
+      },
+    });
 
     if (!lesson) {
       return error({ res, message: "Lesson not found", statusCode: 404 });
     }
 
     // Check if lesson is active (unless user is admin)
-    if (!lesson.isActive && req.user?.role !== 'admin') {
+    if (!lesson.isActive && req.user?.role !== "admin") {
       return error({ res, message: "Lesson not found", statusCode: 404 });
     }
 
     // Get user progress if logged in and enrolled
     let userProgress = null;
     let isEnrolled = false;
-    
+
     if (userId) {
-      const enrollment = await Enrollment.findOne({ 
-        user: userId, 
-        course: lesson.topic.course 
+      const enrollment = await Enrollment.findOne({
+        user: userId,
+        course: lesson.topic.course,
       });
-      
+
       if (enrollment) {
         isEnrolled = true;
         const topicProgress = enrollment.topicsProgress.find(
-          tp => tp.topic.toString() === lesson.topic._id.toString()
+          (tp) => tp.topic.toString() === lesson.topic._id.toString()
         );
-        
+
         if (topicProgress) {
           const lessonProgress = topicProgress.lessonsProgress.find(
-            lp => lp.lesson.toString() === id
+            (lp) => lp.lesson.toString() === id
           );
           userProgress = lessonProgress || null;
         }
@@ -173,8 +201,8 @@ const getLessonById = async (req, res) => {
 
     // Hide quiz answers for non-admin users
     let lessonData = lesson.toObject();
-    if (req.user?.role !== 'admin' && lessonData.quiz) {
-      lessonData.quiz = lessonData.quiz.map(q => ({
+    if (req.user?.role !== "admin" && lessonData.quiz) {
+      lessonData.quiz = lessonData.quiz.map((q) => ({
         question: q.question,
         options: q.options,
         // Don't include correctAnswer and explanation for regular users
@@ -192,7 +220,7 @@ const getLessonById = async (req, res) => {
     return success({
       res,
       message: "Lesson retrieved successfully",
-      data: { lesson: lessonWithDetails }
+      data: { lesson: lessonWithDetails },
     });
   } catch (err) {
     return error({ res, message: err?.message || "Failed to retrieve lesson" });
@@ -212,36 +240,42 @@ const updateLesson = async (req, res) => {
     }
 
     // If order is being updated, check for conflicts
-    if (updateData.order !== undefined && updateData.order !== existingLesson.order) {
+    if (
+      updateData.order !== undefined &&
+      updateData.order !== existingLesson.order
+    ) {
       const conflictingLesson = await Lesson.findOne({
         topic: existingLesson.topic,
         order: updateData.order,
-        _id: { $ne: id }
+        _id: { $ne: id },
       });
       if (conflictingLesson) {
-        return error({ res, message: "Lesson with this order already exists in the topic", statusCode: 409 });
+        return error({
+          res,
+          message: "Lesson with this order already exists in the topic",
+          statusCode: 409,
+        });
       }
     }
 
     updateData.updatedAt = new Date();
 
-    const updatedLesson = await Lesson.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true }
-    ).populate({
-      path: 'topic',
-      select: 'title course',
+    const updatedLesson = await Lesson.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    }).populate({
+      path: "topic",
+      select: "title course",
       populate: {
-        path: 'course',
-        select: 'title'
-      }
+        path: "course",
+        select: "title",
+      },
     });
 
     return success({
       res,
       message: "Lesson updated successfully",
-      data: { lesson: updatedLesson }
+      data: { lesson: updatedLesson },
     });
   } catch (err) {
     return error({ res, message: err?.message || "Failed to update lesson" });
@@ -258,12 +292,12 @@ const deactivateLesson = async (req, res) => {
       { isActive: false, updatedAt: new Date() },
       { new: true }
     ).populate({
-      path: 'topic',
-      select: 'title course',
+      path: "topic",
+      select: "title course",
       populate: {
-        path: 'course',
-        select: 'title'
-      }
+        path: "course",
+        select: "title",
+      },
     });
 
     if (!lesson) {
@@ -273,10 +307,13 @@ const deactivateLesson = async (req, res) => {
     return success({
       res,
       message: "Lesson deactivated successfully",
-      data: { lesson }
+      data: { lesson },
     });
   } catch (err) {
-    return error({ res, message: err?.message || "Failed to deactivate lesson" });
+    return error({
+      res,
+      message: err?.message || "Failed to deactivate lesson",
+    });
   }
 };
 
@@ -293,14 +330,15 @@ const deleteLesson = async (req, res) => {
 
     // Check if any users have progress on this lesson
     const enrollmentsWithProgress = await Enrollment.countDocuments({
-      "topicsProgress.lessonsProgress.lesson": id
+      "topicsProgress.lessonsProgress.lesson": id,
     });
 
     if (enrollmentsWithProgress > 0) {
-      return error({ 
-        res, 
-        message: "Cannot delete lesson with existing user progress. Consider deactivating instead.", 
-        statusCode: 400 
+      return error({
+        res,
+        message:
+          "Cannot delete lesson with existing user progress. Consider deactivating instead.",
+        statusCode: 400,
       });
     }
 
@@ -308,7 +346,7 @@ const deleteLesson = async (req, res) => {
 
     return success({
       res,
-      message: "Lesson deleted successfully"
+      message: "Lesson deleted successfully",
     });
   } catch (err) {
     return error({ res, message: err?.message || "Failed to delete lesson" });
@@ -328,13 +366,17 @@ const reorderLessons = async (req, res) => {
     }
 
     // Verify all lesson IDs belong to this topic
-    const lessons = await Lesson.find({ 
-      _id: { $in: lessonIds }, 
-      topic: topicId 
+    const lessons = await Lesson.find({
+      _id: { $in: lessonIds },
+      topic: topicId,
     });
 
     if (lessons.length !== lessonIds.length) {
-      return error({ res, message: "Some lesson IDs are invalid or don't belong to this topic", statusCode: 400 });
+      return error({
+        res,
+        message: "Some lesson IDs are invalid or don't belong to this topic",
+        statusCode: 400,
+      });
     }
 
     // Update the order of each lesson
@@ -355,19 +397,19 @@ const reorderLessons = async (req, res) => {
       // Get updated lessons
       const updatedLessons = await Lesson.find({ topic: topicId })
         .populate({
-          path: 'topic',
-          select: 'title course',
+          path: "topic",
+          select: "title course",
           populate: {
-            path: 'course',
-            select: 'title'
-          }
+            path: "course",
+            select: "title",
+          },
         })
         .sort({ order: 1 });
 
       return success({
         res,
         message: "Lessons reordered successfully",
-        data: { lessons: updatedLessons }
+        data: { lessons: updatedLessons },
       });
     } catch (err) {
       await session.abortTransaction();
@@ -388,28 +430,40 @@ const submitQuiz = async (req, res) => {
     const userId = req.user._id;
 
     // Get lesson with quiz
-    const lesson = await Lesson.findById(id).populate('topic', 'course');
+    const lesson = await Lesson.findById(id).populate("topic", "course");
     if (!lesson) {
       return error({ res, message: "Lesson not found", statusCode: 404 });
     }
 
     if (!lesson.quiz || lesson.quiz.length === 0) {
-      return error({ res, message: "This lesson does not have a quiz", statusCode: 400 });
+      return error({
+        res,
+        message: "This lesson does not have a quiz",
+        statusCode: 400,
+      });
     }
 
     // Check if user is enrolled in the course
-    const enrollment = await Enrollment.findOne({ 
-      user: userId, 
-      course: lesson.topic.course 
+    const enrollment = await Enrollment.findOne({
+      user: userId,
+      course: lesson.topic.course,
     });
 
     if (!enrollment) {
-      return error({ res, message: "You are not enrolled in this course", statusCode: 403 });
+      return error({
+        res,
+        message: "You are not enrolled in this course",
+        statusCode: 403,
+      });
     }
 
     // Validate answers length
     if (answers.length !== lesson.quiz.length) {
-      return error({ res, message: "Number of answers must match number of questions", statusCode: 400 });
+      return error({
+        res,
+        message: "Number of answers must match number of questions",
+        statusCode: 400,
+      });
     }
 
     // Calculate score
@@ -419,7 +473,7 @@ const submitQuiz = async (req, res) => {
     lesson.quiz.forEach((question, index) => {
       const userAnswer = answers[index];
       const isCorrect = userAnswer === question.correctAnswer;
-      
+
       if (isCorrect) {
         correctAnswers++;
       }
@@ -438,12 +492,12 @@ const submitQuiz = async (req, res) => {
 
     // Update user progress
     const topicProgress = enrollment.topicsProgress.find(
-      tp => tp.topic.toString() === lesson.topic._id.toString()
+      (tp) => tp.topic.toString() === lesson.topic._id.toString()
     );
 
     if (topicProgress) {
       const lessonProgress = topicProgress.lessonsProgress.find(
-        lp => lp.lesson.toString() === id
+        (lp) => lp.lesson.toString() === id
       );
 
       if (lessonProgress) {
@@ -467,7 +521,7 @@ const submitQuiz = async (req, res) => {
         totalQuestions: lesson.quiz.length,
         passed: score >= 70,
         results,
-      }
+      },
     });
   } catch (err) {
     return error({ res, message: err?.message || "Failed to submit quiz" });
@@ -482,33 +536,41 @@ const markLessonProgress = async (req, res) => {
     const userId = req.user._id;
 
     // Get lesson
-    const lesson = await Lesson.findById(id).populate('topic', 'course');
+    const lesson = await Lesson.findById(id).populate("topic", "course");
     if (!lesson) {
       return error({ res, message: "Lesson not found", statusCode: 404 });
     }
 
     // Check if user is enrolled in the course
-    const enrollment = await Enrollment.findOne({ 
-      user: userId, 
-      course: lesson.topic.course 
+    const enrollment = await Enrollment.findOne({
+      user: userId,
+      course: lesson.topic.course,
     });
 
     if (!enrollment) {
-      return error({ res, message: "You are not enrolled in this course", statusCode: 403 });
+      return error({
+        res,
+        message: "You are not enrolled in this course",
+        statusCode: 403,
+      });
     }
 
     // Find topic progress
     const topicProgress = enrollment.topicsProgress.find(
-      tp => tp.topic.toString() === lesson.topic._id.toString()
+      (tp) => tp.topic.toString() === lesson.topic._id.toString()
     );
 
     if (!topicProgress) {
-      return error({ res, message: "Topic progress not found", statusCode: 404 });
+      return error({
+        res,
+        message: "Topic progress not found",
+        statusCode: 404,
+      });
     }
 
     // Find or create lesson progress
     let lessonProgress = topicProgress.lessonsProgress.find(
-      lp => lp.lesson.toString() === id
+      (lp) => lp.lesson.toString() === id
     );
 
     if (!lessonProgress) {
@@ -526,17 +588,25 @@ const markLessonProgress = async (req, res) => {
     if (isCompleted && !lessonProgress.completedAt) {
       lessonProgress.completedAt = new Date();
     }
-    
+
     if (timeSpent !== undefined) {
       lessonProgress.timeSpent = (lessonProgress.timeSpent || 0) + timeSpent;
     }
 
     // Recalculate topic progress
-    const completedLessons = topicProgress.lessonsProgress.filter(lp => lp.isCompleted).length;
+    const completedLessons = topicProgress.lessonsProgress.filter(
+      (lp) => lp.isCompleted
+    ).length;
     const totalLessons = topicProgress.lessonsProgress.length;
-    topicProgress.progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
-    
-    if (topicProgress.progressPercentage === 100 && !topicProgress.isCompleted) {
+    topicProgress.progressPercentage =
+      totalLessons > 0
+        ? Math.round((completedLessons / totalLessons) * 100)
+        : 0;
+
+    if (
+      topicProgress.progressPercentage === 100 &&
+      !topicProgress.isCompleted
+    ) {
       topicProgress.isCompleted = true;
       topicProgress.completedAt = new Date();
     }
@@ -558,11 +628,14 @@ const markLessonProgress = async (req, res) => {
           topic: topicProgress.topic,
           progressPercentage: topicProgress.progressPercentage,
           isCompleted: topicProgress.isCompleted,
-        }
-      }
+        },
+      },
     });
   } catch (err) {
-    return error({ res, message: err?.message || "Failed to update lesson progress" });
+    return error({
+      res,
+      message: err?.message || "Failed to update lesson progress",
+    });
   }
 };
 
@@ -572,22 +645,23 @@ const getLessonAnalytics = async (req, res) => {
     const { id } = req.params;
 
     // Check if lesson exists
-    const lesson = await Lesson.findById(id)
-      .populate({
-        path: 'topic',
-        select: 'title course',
-        populate: {
-          path: 'course',
-          select: 'title'
-        }
-      });
-      
+    const lesson = await Lesson.findById(id).populate({
+      path: "topic",
+      select: "title course",
+      populate: {
+        path: "course",
+        select: "title",
+      },
+    });
+
     if (!lesson) {
       return error({ res, message: "Lesson not found", statusCode: 404 });
     }
 
     // Get enrollments for the course
-    const courseEnrollments = await Enrollment.find({ course: lesson.topic.course });
+    const courseEnrollments = await Enrollment.find({
+      course: lesson.topic.course,
+    });
     const totalEnrolledUsers = courseEnrollments.length;
 
     // Calculate completion statistics
@@ -598,22 +672,25 @@ const getLessonAnalytics = async (req, res) => {
 
     for (const enrollment of courseEnrollments) {
       const topicProgress = enrollment.topicsProgress.find(
-        tp => tp.topic.toString() === lesson.topic._id.toString()
+        (tp) => tp.topic.toString() === lesson.topic._id.toString()
       );
-      
+
       if (topicProgress) {
         const lessonProgress = topicProgress.lessonsProgress.find(
-          lp => lp.lesson.toString() === id
+          (lp) => lp.lesson.toString() === id
         );
-        
+
         if (lessonProgress) {
           if (lessonProgress.isCompleted) {
             completedUsers++;
           }
-          
+
           totalTimeSpent += lessonProgress.timeSpent || 0;
-          
-          if (lessonProgress.quizScore !== null && lessonProgress.quizScore !== undefined) {
+
+          if (
+            lessonProgress.quizScore !== null &&
+            lessonProgress.quizScore !== undefined
+          ) {
             quizAttempts++;
             totalQuizScore += lessonProgress.quizScore;
           }
@@ -621,10 +698,20 @@ const getLessonAnalytics = async (req, res) => {
       }
     }
 
-    const completionRate = totalEnrolledUsers > 0 ? Math.round((completedUsers / totalEnrolledUsers) * 100) : 0;
-    const averageTimeSpent = totalEnrolledUsers > 0 ? Math.round(totalTimeSpent / totalEnrolledUsers) : 0;
-    const averageQuizScore = quizAttempts > 0 ? Math.round(totalQuizScore / quizAttempts) : 0;
-    const quizPassRate = quizAttempts > 0 ? Math.round((quizAttempts / totalEnrolledUsers) * 100) : 0;
+    const completionRate =
+      totalEnrolledUsers > 0
+        ? Math.round((completedUsers / totalEnrolledUsers) * 100)
+        : 0;
+    const averageTimeSpent =
+      totalEnrolledUsers > 0
+        ? Math.round(totalTimeSpent / totalEnrolledUsers)
+        : 0;
+    const averageQuizScore =
+      quizAttempts > 0 ? Math.round(totalQuizScore / quizAttempts) : 0;
+    const quizPassRate =
+      quizAttempts > 0
+        ? Math.round((quizAttempts / totalEnrolledUsers) * 100)
+        : 0;
 
     return success({
       res,
@@ -644,13 +731,20 @@ const getLessonAnalytics = async (req, res) => {
           completionRate,
           averageTimeSpent: `${averageTimeSpent} minutes`,
           quizAttempts,
-          averageQuizScore: lesson.quiz && lesson.quiz.length > 0 ? `${averageQuizScore}%` : 'N/A',
-          quizPassRate: lesson.quiz && lesson.quiz.length > 0 ? `${quizPassRate}%` : 'N/A',
-        }
-      }
+          averageQuizScore:
+            lesson.quiz && lesson.quiz.length > 0
+              ? `${averageQuizScore}%`
+              : "N/A",
+          quizPassRate:
+            lesson.quiz && lesson.quiz.length > 0 ? `${quizPassRate}%` : "N/A",
+        },
+      },
     });
   } catch (err) {
-    return error({ res, message: err?.message || "Failed to retrieve lesson analytics" });
+    return error({
+      res,
+      message: err?.message || "Failed to retrieve lesson analytics",
+    });
   }
 };
 

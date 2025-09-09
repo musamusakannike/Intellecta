@@ -47,16 +47,12 @@ export default function TopicLessonsScreen() {
     loadLessons();
   };
 
-  const handleLessonPress = (lesson: Lesson) => {
+  const handleLessonPress = (lesson: Lesson, index: number) => {
     if (!isAuthenticated) {
-      Alert.alert(
-        'Authentication Required',
-        'Please login to access lessons.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Login', onPress: () => router.push('/auth/login') }
-        ]
-      );
+      Alert.alert('Authentication Required', 'Please login to access lessons.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Login', onPress: () => router.push('/auth/login') },
+      ]);
       return;
     }
 
@@ -64,6 +60,17 @@ export default function TopicLessonsScreen() {
       Alert.alert(
         'Enrollment Required',
         'You need to enroll in this course to access lessons.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+
+    // Check if the lesson is locked
+    if (lesson.isLocked) {
+      Alert.alert(
+        'Lesson Locked',
+        'You must complete the previous lesson to unlock this one.',
         [{ text: 'OK' }]
       );
       return;
@@ -96,14 +103,14 @@ export default function TopicLessonsScreen() {
   const renderLessonItem = ({ item, index }: { item: Lesson; index: number }) => {
     const progress = item.userProgress;
     const isCompleted = progress?.isCompleted || false;
-    const isLocked = !item.isEnrolled;
+    const isLocked = item.isLocked;
     const progressColor = getProgressColor(progress);
 
     return (
       <TouchableOpacity
         style={[styles.lessonCard, isLocked && styles.lockedCard]}
-        onPress={() => handleLessonPress(item)}
-        disabled={isLocked}
+        onPress={() => handleLessonPress(item, index)}
+        disabled={!item.isEnrolled}
       >
         <View style={styles.lessonHeader}>
           <View style={styles.lessonNumber}>
