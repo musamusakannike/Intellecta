@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -21,13 +21,7 @@ export default function TopicLessonsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (topicId) {
-      loadLessons();
-    }
-  }, [topicId]);
-
-  const loadLessons = async () => {
+  const loadLessons = useCallback(async () => {
     try {
       setLoading(true);
       const lessonsData = await lessonsService.getLessonsByTopic(topicId!);
@@ -40,7 +34,13 @@ export default function TopicLessonsScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [topicId]);
+
+  useEffect(() => {
+    if (topicId) {
+      loadLessons();
+    }
+  }, [topicId, loadLessons]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -89,7 +89,7 @@ export default function TopicLessonsScreen() {
     return `${hours}h ${minutes}m`;
   };
 
-  const getProgressColor = (progress?: { isCompleted: boolean; quizScore?: number | null }) => {
+  const getProgressColor = (progress?: { isCompleted: boolean; quizScore?: number | null } | null) => {
     if (!progress) return '#666';
     if (progress.isCompleted) {
       if (progress.quizScore !== undefined && progress.quizScore !== null) {

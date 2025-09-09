@@ -111,20 +111,18 @@ export default function HomeScreen() {
       />
 
       <View style={styles.cardsContainer}>
-        <View style={styles.cardRow}>
-          <View style={styles.cardHalf}>
+          <View style={styles.fullWidthCard}>
             <ContinueLessonCard 
               currentProgress={dashboardData.currentProgress}
               onPress={handleContinueLesson}
             />
           </View>
-          <View style={styles.cardHalf}>
+          <View style={styles.fullWidthCard}>
             <DailyChallengeCard 
               dailyChallenge={dashboardData.dailyChallenge}
               onPress={handleChallengePress}
             />
           </View>
-        </View>
 
         <View style={styles.fullWidthCard}>
           <LeaderboardCard 

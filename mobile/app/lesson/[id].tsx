@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -19,8 +19,7 @@ import YoutubePlayer from 'react-native-youtube-iframe';
 import lessonsService, { 
   Lesson, 
   LessonContent, 
-  LessonContentGroup,
-  QuizSubmissionResponse 
+  LessonContentGroup
 } from '../../src/services/lessonsService';
 
 // Get screen dimensions for responsive content
@@ -35,17 +34,11 @@ export default function LessonDetailScreen() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
-  const [quizResults, setQuizResults] = useState<QuizSubmissionResponse | null>(null);
+  
   const [progressUpdating, setProgressUpdating] = useState(false);
   const [lessonStartTime] = useState(Date.now());
 
-  useEffect(() => {
-    if (lessonId) {
-      loadLesson();
-    }
-  }, [lessonId]);
-
-  const loadLesson = async () => {
+  const loadLesson = useCallback(async () => {
     try {
       setLoading(true);
       const lessonData = await lessonsService.getLessonById(lessonId!);
@@ -63,7 +56,13 @@ export default function LessonDetailScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [lessonId]);
+
+  useEffect(() => {
+    if (lessonId) {
+      loadLesson();
+    }
+  }, [lessonId, loadLesson]);
 
   const handleRefresh = () => {
     setRefreshing(true);
@@ -128,7 +127,6 @@ export default function LessonDetailScreen() {
 
     try {
       const results = await lessonsService.submitQuiz(lessonId!, quizAnswers);
-      setQuizResults(results);
       setQuizSubmitted(true);
 
       // Update lesson progress with quiz score
@@ -210,7 +208,7 @@ export default function LessonDetailScreen() {
               height={220}
               play={false}
               videoId={videoId}
-              onChangeState={(state) => {
+              onChangeState={(state: string) => {
                 console.log('YouTube player state:', state);
               }}
             />
@@ -228,7 +226,7 @@ export default function LessonDetailScreen() {
                   height={220}
                   play={false}
                   videoId={videoId}
-                  onChangeState={(state) => {
+                  onChangeState={(state: string) => {
                     console.log('YouTube player state:', state);
                   }}
                 />
