@@ -9,6 +9,7 @@ const {
   deleteAccount,
   checkPremiumAccess,
   getPremiumFeatures,
+  getProfileData,
   getAllUsers,
   getUserById,
   adminUpdateUser,
@@ -35,6 +36,9 @@ router.use(authenticate);
 // USER ROUTES
 // Get current user profile
 router.get("/profile", getProfile);
+
+// Get extended profile data (stats, achievements, etc.)
+router.get("/profile-data", getProfileData);
 
 // Update user profile
 router.put("/profile", updateProfileValidation(), handleValidationErrors, updateProfile);

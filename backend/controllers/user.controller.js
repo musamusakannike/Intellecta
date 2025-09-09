@@ -229,6 +229,103 @@ const deleteAccount = async (req, res) => {
   }
 };
 
+// Get extended profile data
+const getProfileData = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).select('-password');
+    
+    if (!user) {
+      return error({ res, message: "User not found", statusCode: 404 });
+    }
+
+    // Mock profile data for now - in production, this would come from various collections
+    const profileData = {
+      stats: {
+        xp: 2450,
+        completedCourses: 3,
+        streakDays: 7,
+        totalLessons: 45,
+        studyTime: 180, // 3 hours
+        rank: 12,
+      },
+      level: {
+        current: 3,
+        name: 'Code Explorer',
+        xpRequired: 3000,
+        xpCurrent: 2450,
+        progress: 82, // (2450/3000) * 100
+        color: '#06B6D4', // Cyan for level 3
+      },
+      achievements: [
+        {
+          id: '1',
+          title: 'First Steps',
+          description: 'Complete your first lesson',
+          icon: 'footsteps',
+          category: 'learning',
+          isUnlocked: true,
+          unlockedAt: '2024-01-15T10:30:00Z',
+          rarity: 'common',
+        },
+        {
+          id: '2',
+          title: 'Week Warrior',
+          description: 'Maintain a 7-day streak',
+          icon: 'flame',
+          category: 'streak',
+          isUnlocked: true,
+          unlockedAt: '2024-01-22T09:15:00Z',
+          rarity: 'rare',
+        },
+        {
+          id: '3',
+          title: 'Course Crusher',
+          description: 'Complete 5 courses',
+          icon: 'trophy',
+          category: 'completion',
+          isUnlocked: false,
+          progress: 60, // 3/5 courses
+          requirement: '2 more courses to unlock',
+          rarity: 'epic',
+        },
+      ],
+      certificates: [
+        {
+          id: '1',
+          courseId: 'course-1',
+          courseName: 'Introduction to React Native',
+          instructorName: 'Sarah Johnson',
+          completedAt: '2024-01-20T14:30:00Z',
+          certificateUrl: 'https://example.com/certificates/1',
+          grade: 'A+',
+          skills: ['React Native', 'JavaScript', 'Mobile Development'],
+          thumbnail: 'https://example.com/course-thumbnails/react-native.jpg',
+        },
+        {
+          id: '2',
+          courseId: 'course-2',
+          courseName: 'JavaScript Fundamentals',
+          instructorName: 'Mike Davis',
+          completedAt: '2024-01-10T16:45:00Z',
+          certificateUrl: 'https://example.com/certificates/2',
+          grade: 'A',
+          skills: ['JavaScript', 'ES6+', 'DOM Manipulation'],
+          thumbnail: 'https://example.com/course-thumbnails/javascript.jpg',
+        },
+      ],
+    };
+
+    return success({
+      res,
+      message: "Profile data retrieved successfully",
+      data: profileData
+    });
+  } catch (err) {
+    return error({ res, message: err?.message || "Failed to retrieve profile data" });
+  }
+};
+
 // Check if user has premium access
 const checkPremiumAccess = async (req, res) => {
   try {
@@ -498,6 +595,7 @@ module.exports = {
   deleteAccount,
   checkPremiumAccess,
   getPremiumFeatures,
+  getProfileData,
   
   // Admin functions
   getAllUsers,

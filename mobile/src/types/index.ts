@@ -156,6 +156,57 @@ export interface VerificationResponse {
   };
 }
 
+// Profile types
+export interface ProfileStats {
+  xp: number;
+  completedCourses: number;
+  streakDays: number;
+  totalLessons: number;
+  studyTime: number; // in minutes
+  rank: number;
+}
+
+export interface UserLevel {
+  current: number;
+  name: string;
+  xpRequired: number;
+  xpCurrent: number;
+  progress: number; // 0-100
+  color: string; // Color for the glowing ring
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: 'learning' | 'streak' | 'completion' | 'social' | 'special';
+  unlockedAt?: string;
+  isUnlocked: boolean;
+  progress?: number; // 0-100 for progress-based achievements
+  requirement?: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+}
+
+export interface Certificate {
+  id: string;
+  courseId: string;
+  courseName: string;
+  instructorName: string;
+  completedAt: string;
+  certificateUrl: string;
+  grade?: string;
+  skills: string[];
+  thumbnail: string;
+}
+
+export interface ProfileData {
+  stats: ProfileStats;
+  level: UserLevel;
+  achievements: Achievement[];
+  certificates: Certificate[];
+}
+
 // Navigation types
 export interface TabScreens {
   Home: undefined;
