@@ -13,6 +13,9 @@ const topicRoutes = require("./routes/topic.route");
 const lessonRoutes = require("./routes/lesson.route");
 const paymentRoutes = require("./routes/payment.route");
 const dashboardRoutes = require("./routes/dashboard.route");
+const messageRoutes = require("./routes/message.route");
+const qaRoutes = require("./routes/qa.route");
+const projectRoutes = require("./routes/project.route");
 
 const app = express();
 connectDB();
@@ -41,5 +44,8 @@ app.use("/api/topics", topicRoutes);
 app.use("/api/lessons", lessonRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/qa", qaRoutes);
+app.use("/api/projects", projectRoutes);
 
 module.exports = app;
