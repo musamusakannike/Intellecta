@@ -3,10 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  ScrollView,
   TouchableOpacity,
-  RefreshControl,
   Alert,
+  FlatList,
 } from 'react-native';
 import { useAuth } from '../../src/contexts/AuthContext';
 import ProfileCard from '../../src/components/profile/ProfileCard';
@@ -101,41 +100,40 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView
+    <FlatList
       style={styles.container}
       contentContainerStyle={styles.scrollContent}
       showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          tintColor="#8B5FBF"
-          colors={['#8B5FBF']}
-        />
+      data={[1]} // dummy data to enable FlatList rendering
+      keyExtractor={(item) => String(item)}
+      renderItem={() => null}
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+      ListHeaderComponent={
+        <>
+          <View style={styles.header}>
+            <Text style={styles.title}>Profile</Text>
+          </View>
+
+          <ProfileCard
+            user={user}
+            stats={profileData.stats}
+            level={profileData.level}
+            onUpdateProfile={handleUpdateProfile}
+          />
+
+          <ProfileTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+
+          <View style={styles.tabContent}>
+            {renderActiveTab()}
+          </View>
+        </>
       }
-    >
-      <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
-      </View>
-
-      <ProfileCard
-        user={user}
-        stats={profileData.stats}
-        level={profileData.level}
-        onUpdateProfile={handleUpdateProfile}
-      />
-
-      <ProfileTabs
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-      />
-
-      <View style={styles.tabContent}>
-        {renderActiveTab()}
-      </View>
-
-      <View style={styles.bottomPadding} />
-    </ScrollView>
+      ListFooterComponent={<View style={styles.bottomPadding} />}
+    />
   );
 }
 
