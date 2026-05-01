@@ -386,3 +386,224 @@ module.exports = {
   logout,
   verifyToken,
 };
+
+// Google OAuth
+const googleAuth = async (req, res) => {
+  try {
+    const { idToken, email, name } = req.body;
+
+    if (!email) {
+      return error({ res, message: "Email is required", statusCode: 400 });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user
+      user = new User({
+        name: name || email.split('@')[0],
+        email,
+        verified: true, // OAuth users are pre-verified
+        password: await bcrypt.hash(Math.random().toString(36), 10), // Random password
+      });
+      await user.save();
+      
+      // Send welcome email
+      await sendWelcomeEmail({ to: user.email, name: user.name });
+    }
+
+    // Generate tokens
+    const { accessToken, refreshToken, refreshTokenHash, refreshTokenExpiry } =
+      await generateTokenPair(user._id);
+
+    user.refreshTokenHash = refreshTokenHash;
+    user.refreshTokenExpires = refreshTokenExpiry;
+    await user.save();
+
+    return success({
+      res,
+      message: "Google authentication successful",
+      data: {
+        token: accessToken,
+        refreshToken: refreshToken,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          isPremium: user.isPremium,
+          premiumExpiryDate: user.premiumExpiryDate,
+        },
+      },
+    });
+  } catch (err) {
+    return error({ res, message: err?.message || "Google authentication failed" });
+  }
+};
+
+// Apple OAuth
+const appleAuth = async (req, res) => {
+  try {
+    const { idToken, email, fullName } = req.body;
+
+    if (!email) {
+      return error({ res, message: "Email is required", statusCode: 400 });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user
+      const name = fullName?.givenName && fullName?.familyName
+        ? `${fullName.givenName} ${fullName.familyName}`
+        : email.split('@')[0];
+
+      user = new User({
+        name,
+        email,
+        verified: true, // OAuth users are pre-verified
+        password: await bcrypt.hash(Math.random().toString(36), 10), // Random password
+      });
+      await user.save();
+      
+      // Send welcome email
+      await sendWelcomeEmail({ to: user.email, name: user.name });
+    }
+
+    // Generate tokens
+    const { accessToken, refreshToken, refreshTokenHash, refreshTokenExpiry } =
+      await generateTokenPair(user._id);
+
+    user.refreshTokenHash = refreshTokenHash;
+    user.refreshTokenExpires = refreshTokenExpiry;
+    await user.save();
+
+    return success({
+      res,
+      message: "Apple authentication successful",
+      data: {
+        token: accessToken,
+        refreshToken: refreshToken,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          isPremium: user.isPremium,
+          premiumExpiryDate: user.premiumExpiryDate,
+        },
+      },
+    });
+  } catch (err) {
+    return error({ res, message: err?.message || "Apple authentication failed" });
+  }
+};
+
+// Forgot Password - Send reset code
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Don't reveal if user exists
+      return success({
+        res,
+        message: "If an account exists with this email, a reset code has been sent",
+      });
+    }
+
+    const code = generateCode();
+    const expires = new Date(Date.now() + VERIFICATION_EXP_MINUTES * 60 * 1000);
+    
+    user.verificationCode = code;
+    user.verificationCodeExpires = expires;
+    await user.save();
+
+    // Send reset email
+    await sendVerificationEmail({ 
+      to: user.email, 
+      name: user.name, 
+      code,
+      subject: 'Password Reset Code',
+      message: `Your password reset code is: ${code}. This code will expire in ${VERIFICATION_EXP_MINUTES} minutes.`
+    });
+
+    return success({
+      res,
+      message: "If an account exists with this email, a reset code has been sent",
+    });
+  } catch (err) {
+    return error({ res, message: err?.message || "Failed to process request" });
+  }
+};
+
+// Reset Password with code
+const resetPassword = async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return error({ res, message: "Invalid reset code", statusCode: 400 });
+    }
+
+    if (!user.verificationCode || !user.verificationCodeExpires) {
+      return error({
+        res,
+        message: "No reset code found. Please request a new one.",
+        statusCode: 400,
+      });
+    }
+
+    if (new Date() > new Date(user.verificationCodeExpires)) {
+      return error({
+        res,
+        message: "Reset code expired. Please request a new one.",
+        statusCode: 400,
+      });
+    }
+
+    if (String(code).trim() !== String(user.verificationCode)) {
+      return error({
+        res,
+        message: "Invalid reset code",
+        statusCode: 400,
+      });
+    }
+
+    // Update password
+    user.password = await bcrypt.hash(newPassword, 10);
+    user.verificationCode = null;
+    user.verificationCodeExpires = null;
+    
+    // Invalidate all refresh tokens for security
+    user.refreshTokenHash = null;
+    user.refreshTokenExpires = null;
+    
+    await user.save();
+
+    return success({
+      res,
+      message: "Password reset successfully. Please login with your new password.",
+    });
+  } catch (err) {
+    return error({ res, message: err?.message || "Password reset failed" });
+  }
+};
+
+module.exports = {
+  register,
+  login,
+  verifyEmail,
+  resendVerificationCode,
+  refreshToken,
+  logout,
+  verifyToken,
+  googleAuth,
+  appleAuth,
+  forgotPassword,
+  resetPassword,
+};
