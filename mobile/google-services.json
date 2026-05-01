@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "384254940125",
+    "project_id": "kodr-by-codiac",
+    "storage_bucket": "kodr-by-codiac.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:384254940125:android:7a0c55a31d03a131419c34",
+        "android_client_info": {
+          "package_name": "com.kodr.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "384254940125-e6c5krituqm1borampq3curg4uumhfjg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDB6Pm3pE-bemwtrHhNbBPkTKgRs7J4IcI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "384254940125-e6c5krituqm1borampq3curg4uumhfjg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
