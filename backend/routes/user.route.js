@@ -18,7 +18,7 @@ const {
 } = require("../controllers/user.controller");
 
 const { authenticate, requireAdmin, requireOwnershipOrAdmin } = require("../middleware/auth.middleware");
-const { upload } = require("../config/cloudinary.config");
+const { upload } = require("../config/r2.config");
 const handleValidationErrors = require("../validations/handler.validation");
 const {
   updateProfileValidation,

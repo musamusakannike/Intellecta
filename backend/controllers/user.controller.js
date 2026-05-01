@@ -1,7 +1,7 @@
 const User = require("../models/user.model");
 const { error, success } = require("../util/response.util");
 const bcrypt = require("bcryptjs");
-const { uploadToCloudinary, deleteFromCloudinary } = require("../config/cloudinary.config");
+const { uploadToR2, deleteFromR2 } = require("../config/r2.config");
 
 // Get current user profile
 const getProfile = async (req, res) => {
@@ -107,14 +107,14 @@ const uploadProfilePicture = async (req, res) => {
     // Delete old profile picture if exists
     if (user.profilePicture?.publicId) {
       try {
-        await deleteFromCloudinary(user.profilePicture.publicId);
+        await deleteFromR2(user.profilePicture.publicId);
       } catch (deleteError) {
         console.warn("Failed to delete old profile picture:", deleteError);
       }
     }
 
-    // Upload new image to Cloudinary
-    const result = await uploadToCloudinary(req.file.buffer, "profile-pictures");
+    // Upload new image to R2
+    const result = await uploadToR2(req.file.buffer, "profile-pictures");
     
     const updatedUser = await User.findByIdAndUpdate(
       userId,
@@ -157,8 +157,8 @@ const deleteProfilePicture = async (req, res) => {
       return error({ res, message: "No profile picture to delete", statusCode: 400 });
     }
 
-    // Delete from Cloudinary
-    await deleteFromCloudinary(user.profilePicture.publicId);
+    // Delete from R2
+    await deleteFromR2(user.profilePicture.publicId);
     
     // Update user document
     const updatedUser = await User.findByIdAndUpdate(
@@ -209,10 +209,10 @@ const deleteAccount = async (req, res) => {
       return error({ res, message: "User not found", statusCode: 404 });
     }
 
-    // Delete profile picture from Cloudinary if exists
+    // Delete profile picture from R2 if exists
     if (user.profilePicture?.publicId) {
       try {
-        await deleteFromCloudinary(user.profilePicture.publicId);
+        await deleteFromR2(user.profilePicture.publicId);
       } catch (deleteError) {
         console.warn("Failed to delete profile picture:", deleteError);
       }
@@ -523,10 +523,10 @@ const adminDeleteUser = async (req, res) => {
       return error({ res, message: "User not found", statusCode: 404 });
     }
 
-    // Delete profile picture from Cloudinary if exists
+    // Delete profile picture from R2 if exists
     if (user.profilePicture?.publicId) {
       try {
-        await deleteFromCloudinary(user.profilePicture.publicId);
+        await deleteFromR2(user.profilePicture.publicId);
       } catch (deleteError) {
         console.warn("Failed to delete profile picture:", deleteError);
       }
