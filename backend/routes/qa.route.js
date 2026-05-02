@@ -6,7 +6,7 @@ const {
   createAnswer,
   voteAnswer,
 } = require("../controllers/qa.controller");
-const authMiddleware = require("../middleware/auth.middleware");
+const { authenticate: authMiddleware } = require("../middleware/auth.middleware");
 
 const router = express.Router();
 

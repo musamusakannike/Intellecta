@@ -4,7 +4,7 @@ const {
   getConversations,
   getMessages,
 } = require("../controllers/message.controller");
-const authMiddleware = require("../middleware/auth.middleware");
+const { authenticate: authMiddleware } = require("../middleware/auth.middleware");
 
 const router = express.Router();
 
