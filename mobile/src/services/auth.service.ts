@@ -25,9 +25,8 @@ class AuthService {
       data
     );
     
-    if (response.success && response.data) {
-      await this.saveAuthData(response.data.token, response.data.refreshToken, response.data.user);
-    }
+    // Do NOT save auth data here — the backend doesn't issue tokens at registration.
+    // Tokens are only returned after email verification (verifyEmail).
     
     return response as AuthResponse;
   }
