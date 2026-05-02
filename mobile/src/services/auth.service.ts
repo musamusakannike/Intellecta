@@ -102,12 +102,19 @@ class AuthService {
   async signInWithGoogle(): Promise<AuthResponse> {
     try {
       // Configure Google Sign In
+      // webClientId: the Web client ID from Firebase Console → Authentication → Sign-in method → Google
+      // It looks like: 384254940125-xxxx.apps.googleusercontent.com (client_type: 3 in google-services.json)
       GoogleSignin.configure({
-        webClientId: 'YOUR_WEB_CLIENT_ID', // From Firebase Console
+        webClientId: '384254940125-e6c5krituqm1borampq3curg4uumhfjg.apps.googleusercontent.com',
       });
 
       await GoogleSignin.hasPlayServices();
-      const { idToken } = await GoogleSignin.signIn();
+      const signInResult = await GoogleSignin.signIn();
+      const idToken = signInResult.data?.idToken;
+
+      if (!idToken) {
+        throw new Error('No ID token received from Google Sign-In');
+      }
 
       // Create a Google credential with the token
       const googleCredential = auth.GoogleAuthProvider.credential(idToken);

@@ -1,7 +1,7 @@
 // API Configuration
 export const API_CONFIG = {
   BASE_URL: __DEV__ 
-    ? 'http://localhost:5000/api' 
+    ? 'http://172.20.10.3:5000/api' 
     : 'https://api.kodr.app/api',
   TIMEOUT: 30000,
 };
